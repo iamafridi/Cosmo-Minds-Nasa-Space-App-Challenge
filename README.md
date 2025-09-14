@@ -1,6 +1,8 @@
 # 🌍 Cosmic Globe Visualization
 
 An immersive, interactive 3D globe experience built by **Team Cosmo Minds**, featuring cutting-edge web technologies to create a stunning cosmic visualization that connects the world.
+## DEMO
+<img width="1918" height="972" alt="image" src="https://github.com/user-attachments/assets/77afeb9a-fa18-4fc4-9475-af0901ab83f4" />
 
 ## ✨ Features
 
