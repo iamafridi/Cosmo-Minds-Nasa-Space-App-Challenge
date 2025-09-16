@@ -2,15 +2,20 @@ export const navLinks = [
   {
     id: 1,
     name: "Home",
-    href: "#home",
+    href: "/",
   },
   {
     id: 2,
+    name: "Terra Visualize",
+    href: "/terra-game",
+  },
+  {
+    id: 3,
     name: "About Us",
     href: "#about",
   },
   {
-    id: 3,
+    id: 4,
     name: "Contact Us",
     href: "#contact",
   },
