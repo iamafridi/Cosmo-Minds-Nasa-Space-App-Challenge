@@ -1,168 +1,239 @@
+/* Import Google Fonts */
 @import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&display=swap");
 
-* { box-sizing: border-box; }
-.terra-book { font-family: "Bricolage Grotesque", system-ui, sans-serif; }
-
-/* ------------ Page shell ------------ */
-.page {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+/* General reset and font */
+* { 
+  box-sizing: border-box; 
 }
+.terra-book { 
+  font-family: "Bricolage Grotesque", system-ui, sans-serif; 
+}
+
+/* ------------ Page Shell ------------ */
+.page {
+  background: #111827; /* Deep Space Black */
+  border: 1px solid #2a2d3d; /* Darker border */
+  border-radius: 15px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+  background-color: #1b1d25;
+  transform: scale(1);
+  transition: transform 0.3s ease-in-out;
+}
+
+.page:hover {
+  transform: scale(1.05); /* Slight zoom effect */
+}
+
 .page-content {
   height: 100%;
-  padding: 18px 18px;
+  padding: 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  overflow: hidden;           /* keep content inside page */
+  gap: 20px;
+  overflow: hidden;
   max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: anywhere;
+  color: #f1f5f9; /* Soft off-white text color */
+  position: relative;
 }
 
-/* Allow inner content to scroll vertically if long */
-.year-page,
-.country-intro,
-.back,
-.cover-simple {
-  overflow-y: auto;
-  max-width: 100%;
-  word-wrap: break-word;
-  overflow-wrap: anywhere;
-}
-
-/* ------------ Simple cover (fallback) ------------ */
-.cover { background: #0b1220; color: #fff; }
-.cover-simple {
-  height: 100%;
-  display: grid;
-  place-items: center;
+/* ------------ Cover Page with Green Vibe ------------ */
+.cover {
+  background: linear-gradient(135deg, #3b82f6, #10b981, #16a34a); /* Blue & Green Gradient */
+  color: #fff;
+  padding: 40px 30px;
+  border-radius: 20px;
   text-align: center;
-  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  animation: fadeInCover 1.5s ease-in-out;
 }
-.cover-title { font-size: 22px; font-weight: 700; }
-.cover-subtitle { font-size: 14px; opacity: 0.9; margin-top: 6px; }
 
-/* ------------ Country intro ------------ */
-.country-intro { display: grid; gap: 10px; }
+@keyframes fadeInCover {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cover-title {
+  font-size: 34px;
+  font-weight: 800;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.cover-subtitle {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 12px;
+  font-weight: 600;
+  opacity: 0.9;
+  animation: slideInSubtitle 1.8s ease-in-out;
+}
+
+@keyframes slideInSubtitle {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ------------ Country Intro ------------ */
+.country-intro { display: grid; gap: 15px; }
+
 .country-cover {
   width: 100%;
-  height: 170px;
+  height: 200px;
   object-fit: cover;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  border: 1px solid #2a2d3d;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
-.country-title { font-size: 18px; color: #0f172a; }
-.country-lead { color: #334155; font-size: 14px; line-height: 1.45; }
 
-/* ------------ Year page ------------ */
-.year-head { display: flex; align-items: center; justify-content: space-between; }
-.year-country { font-size: 15px; color: #0f172a; }
-.year-badge {
-  font-size: 12px; font-weight: 700;
-  background: #f1f5f9; border: 1px solid #e2e8f0;
-  color: #0f172a; padding: 3px 8px; border-radius: 999px;
+.country-title {
+  font-size: 24px;
+  color: #f1f5f9;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  font-weight: 700;
 }
-.map-figure { margin: 0; }
+
+.country-lead {
+  color: #e0e7ff;
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.country-lead:hover {
+  color: #10b981; /* Highlight color on hover */
+}
+
+/* ------------ Year Page ------------ */
+.year-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #3b82f6;
+  padding-bottom: 12px;
+  animation: slideInYearHead 0.7s ease-out;
+}
+
+@keyframes slideInYearHead {
+  from { transform: translateX(-50px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.year-country {
+  font-size: 18px;
+  color: #f1f5f9;
+  font-weight: 700;
+}
+
+.year-badge {
+  font-size: 14px;
+  font-weight: 700;
+  background: #10b981; /* Green Badge */
+  border: 1px solid #34d399;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.map-figure {
+  margin: 0;
+}
+
 .map-figure img {
   width: 100%;
-  height: 215px;
+  height: 250px;
   object-fit: contain;
-  background: #0b1320;
-  border-radius: 6px;
-  border: 1px solid #111827;
+  background: #1b1d25;
+  border-radius: 12px;
+  border: 2px solid #2a2d3d;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
 }
+
+.map-figure img:hover {
+  transform: scale(1.05); /* Zoom effect on hover */
+}
+
 .map-figure figcaption {
-  text-align: center; font-size: 12px; color: #64748b; margin-top: 6px;
-}
-.story { color: #1f2937; font-size: 14px; line-height: 1.45; }
-
-/* ------------ Back page ------------ */
-.back { display: grid; place-content: center; text-align: center; gap: 6px; }
-.back h2 { font-size: 18px; }
-.back p { font-size: 13px; color: #475569; }
-
-/* =========================================================
-   ✨ Fancy animated cover (safe with HTMLFlipBook)
-   ========================================================= */
-.cover {
-  color: #fff;
-  overflow: hidden;
-  position: relative;
-}
-.cover-bg {
-  height: 100%;
-  display: grid;
-  place-items: center;
   text-align: center;
-  border-radius: 10px;
-  padding: 28px;
-  position: relative;
-  background:
-    radial-gradient(1200px 600px at 50% -10%, #1e3a8a 0%, #0b1220 60%, #080c16 100%),
-    url("/images/earth_glow.png");
-  background-size: cover;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.35);
-}
-.cover-bg > * { position: relative; z-index: 2; }   /* keep text above sheen */
-
-/* gentle float without 3D rotate (avoid flip conflicts) */
-@keyframes subtleFloat {
-  0%,100% { transform: translateY(0px); }
-  50%     { transform: translateY(-3px); }
-}
-.cover-bg { animation: subtleFloat 6s ease-in-out infinite; }
-
-/* moving light streak UNDER the text */
-.cover-bg::after{
-  content:"";
-  position:absolute; inset:-30%;
-  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.14) 50%, transparent 60%);
-  transform: translateX(-70%) rotate(8deg);
-  animation: sweep 5.5s ease-in-out infinite;
-  pointer-events:none;
-  z-index: 1;
-}
-@keyframes sweep {
-  0%   { transform: translateX(-70%) rotate(8deg) }
-  60%  { transform: translateX(40%)  rotate(8deg) }
-  100% { transform: translateX(120%) rotate(8deg) }
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 8px;
 }
 
-/* embossed headline */
-.cover-title{
-  font-size: 28px; font-weight: 800; letter-spacing:.3px;
-  text-shadow: 0 1px 0 rgba(255,255,255,.08), 0 10px 30px rgba(0,0,0,.5);
-}
-.cover-subtitle{ opacity:.9; margin-top:8px; font-size:14px }
-
-/* =========================================================
-   🛡️ Compatibility fixes with HTMLFlipBook
-   - Remove 3D hover rotations (they fight the page flip)
-   - Guard against backface culling/clipping
-   ========================================================= */
-
-/* Safe hover (no rotateX/Y) */
-.terra-book .page:hover .page-content {
-  transform: translateY(-1px);              /* tiny lift only */
-  filter: brightness(1.02);
-  box-shadow: 0 10px 20px rgba(0,0,0,.12);
-  transition: transform .25s ease, filter .25s ease, box-shadow .25s ease;
+.story {
+  color: #e0e7ff;
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 500;
 }
 
-/* Prevent half-page disappearing during flip */
-.terra-book .page,
-.terra-book .page .page-content,
-.terra-book .map-figure img,
-.terra-book .country-cover {
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  transform: translateZ(0); /* force compositing without creating 3D rotation */
+/* ------------ Back Page ------------ */
+.back {
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 10px;
+  padding: 20px;
 }
 
-/* Keep everything inside the page bounds */
-.terra-book .page * {
-  max-width: 100%;
+.back h2 {
+  font-size: 24px;
+  color: #f1f5f9;
+  font-weight: 700;
+}
+
+.back p {
+  font-size: 16px;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* ------------ Glow Effect on Hover ------------ */
+.page:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 30px rgba(0, 255, 255, 0.2), 0 6px 10px rgba(0, 255, 255, 0.2); /* Cyan glow effect */
+}
+
+/* ------------ Panel and Button Transitions ------------ */
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: #3b82f6;
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+/* ------------ Responsive Design ------------ */
+@media (max-width: 768px) {
+  .cover-title {
+    font-size: 26px;
+  }
+
+  .cover-subtitle {
+    font-size: 16px;
+  }
+
+  .country-title {
+    font-size: 22px;
+  }
+
+  .map-figure img {
+    height: 200px;
+  }
+
+  .back h2 {
+    font-size: 22px;
+  }
+
+  .back p {
+    font-size: 14px;
+  }
 }

@@ -186,10 +186,11 @@ const Hero = () => {
 
         {/* Interactive Globe */}
         <GlobeComponent
-          dimensions={dimensions}
-          starsData={starsData}
-          onLocationClick={handleLocationClick}
-        />
+  dimensions={dimensions}
+  starsData={starsData}
+  onLocationClick={handleLocationClick}
+  satellitePath="/nasa_eos_am-1terra_satellite.glb"
+/>
 
         {/* Title / CTA overlay */}
         <div className="absolute top-8 left-1/2 -translate-x-1/2 z-20 text-center">

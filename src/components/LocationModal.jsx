@@ -1,4 +1,3 @@
-// src/components/LocationModal.jsx
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -43,6 +42,8 @@ export default function LocationModal({ location, isOpen, onClose }) {
           animate={{ y: 0, opacity: 1, scale: 1 }}
           exit={{ y: 20, opacity: 0, scale: 0.98 }}
           transition={{ type: 'spring', stiffness: 280, damping: 26 }}
+          aria-labelledby="loc-modal-title" // Adding aria-labelledby for screen reader support
+          aria-describedby="loc-modal-description" // Describes the content for screen readers
         >
           <div className="flex items-center justify-between mb-4">
             <h2 id="loc-modal-title" className="text-xl font-bold text-white">
@@ -57,7 +58,7 @@ export default function LocationModal({ location, isOpen, onClose }) {
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div id="loc-modal-description" className="space-y-4">
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="bg-slate-800 rounded-lg p-3 border border-slate-600">
                 <span className="text-slate-400 block">Latitude</span>

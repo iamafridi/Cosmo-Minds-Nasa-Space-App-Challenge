@@ -1,5 +1,4 @@
-// src/components/GlobeComponent.jsx
-import React, { useRef, useCallback, useMemo, useEffect, useState } from 'react';
+import React, { useRef, useCallback, useMemo, useEffect, useState } from 'react'; // <-- Added React hooks import
 import Globe from 'react-globe.gl';
 import * as THREE from 'three';
 import { colors, generateArcsData, locations } from '../constants/locationsData';

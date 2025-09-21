@@ -39,12 +39,10 @@ const RightBookPanel = ({ open, countryName, onClose, bookData }) => {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: '100%', opacity: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 30 }}
-          className="fixed top-0 right-0 h-screen w-[420px] max-w-[90vw] bg-black/90 backdrop-blur-md z-[99998] border-l border-white/10 flex flex-col"
+          className="fixed top-0 right-0 h-screen w-[420px] max-w-[90vw] bg-transparent z-[99998] border-l border-white/10 flex flex-col"
         >
-          <div className="flex items-center justify-between px-4 h-12 border-b border-white/10">
+          <div className="flex items-center justify-between px-4 h-12">
             <div className="flex items-center gap-2 text-white">
-              <BookOpen className="w-5 h-5" />
-              <span className="font-semibold text-sm">Storybook • {countryName}</span>
             </div>
             <button onClick={onClose} className="text-gray-300 hover:text-white text-xl leading-none">×</button>
           </div>

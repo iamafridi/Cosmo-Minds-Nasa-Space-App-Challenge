@@ -68,12 +68,15 @@ export default function CommandPalette({
         className="fixed inset-0 z-[1000] flex items-start justify-center p-4"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         aria-modal="true" role="dialog" aria-labelledby="cmdk-title"
-        onMouseDown={(e)=>{ if (e.target === e.currentTarget) onClose?.(); }}
+        onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
+        aria-activedescendant={`result-${active}`} // Adding aria-activedescendant
       >
+        {/* Backdrop */}
         <motion.div
           className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         />
+        {/* Command Palette Panel */}
         <motion.div
           className="relative w-full max-w-xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden"
           initial={{ y: 24, opacity: 0, scale: 0.98 }}
@@ -81,13 +84,13 @@ export default function CommandPalette({
           exit={{ y: 20, opacity: 0, scale: 0.98 }}
           transition={{ type: 'spring', stiffness: 280, damping: 26 }}
         >
-          {/* header / input */}
+          {/* Header / Input */}
           <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-700">
             <Search className="w-4 h-4 text-slate-300" />
             <input
               ref={inputRef}
               value={q}
-              onChange={(e)=>setQ(e.target.value)}
+              onChange={(e) => setQ(e.target.value)}
               placeholder="Search country… (try: Japan, Kenya, Brazil)"
               className="flex-1 bg-transparent outline-none text-white placeholder:text-slate-400"
             />
@@ -101,7 +104,7 @@ export default function CommandPalette({
             ><X className="w-4 h-4" /></button>
           </div>
 
-          {/* quick actions */}
+          {/* Quick Actions */}
           {!!quickActions.length && (
             <div className="px-4 pt-3 pb-2 grid grid-cols-2 gap-2">
               {quickActions.map((qa, i) => (
@@ -120,7 +123,7 @@ export default function CommandPalette({
             </div>
           )}
 
-          {/* results */}
+          {/* Search Results */}
           <ul ref={listRef} className="max-h-72 overflow-y-auto py-2">
             {results.length === 0 && (
               <li className="px-4 py-3 text-slate-400 text-sm">No matches.</li>
@@ -128,10 +131,10 @@ export default function CommandPalette({
             {results.map((r, i) => (
               <li key={`${r.text}-${i}`}>
                 <button
-                  onMouseEnter={()=>setActive(i)}
-                  onClick={()=>{ onSelect?.(r.text); onClose?.(); }}
+                  onMouseEnter={() => setActive(i)}
+                  onClick={() => { onSelect?.(r.text); onClose?.(); }}
                   className={`w-full px-4 py-2 text-left text-sm ${
-                    i===active ? 'bg-slate-800 text-white' : 'text-slate-200 hover:bg-slate-800/80'
+                    i === active ? 'bg-slate-800 text-white' : 'text-slate-200 hover:bg-slate-800/80'
                   }`}
                 >
                   {r.text}
@@ -140,7 +143,7 @@ export default function CommandPalette({
             ))}
           </ul>
 
-          {/* footer */}
+          {/* Footer */}
           <div className="px-4 py-2 border-t border-slate-700 text-[11px] text-slate-400 flex items-center justify-between">
             <span>Type a country name, then Enter</span>
             <span>↑↓ to navigate • Esc to close</span>
