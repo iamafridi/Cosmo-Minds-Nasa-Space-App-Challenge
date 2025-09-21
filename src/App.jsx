@@ -6,7 +6,6 @@ const App = () => {
     <div className="relative w-full h-screen">
       <Navbar />
       <Hero />
-
     </div>
   );
 };
