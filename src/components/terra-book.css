@@ -1,0 +1,168 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&display=swap");
+
+* { box-sizing: border-box; }
+.terra-book { font-family: "Bricolage Grotesque", system-ui, sans-serif; }
+
+/* ------------ Page shell ------------ */
+.page {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+}
+.page-content {
+  height: 100%;
+  padding: 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;           /* keep content inside page */
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* Allow inner content to scroll vertically if long */
+.year-page,
+.country-intro,
+.back,
+.cover-simple {
+  overflow-y: auto;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* ------------ Simple cover (fallback) ------------ */
+.cover { background: #0b1220; color: #fff; }
+.cover-simple {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 24px;
+}
+.cover-title { font-size: 22px; font-weight: 700; }
+.cover-subtitle { font-size: 14px; opacity: 0.9; margin-top: 6px; }
+
+/* ------------ Country intro ------------ */
+.country-intro { display: grid; gap: 10px; }
+.country-cover {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+.country-title { font-size: 18px; color: #0f172a; }
+.country-lead { color: #334155; font-size: 14px; line-height: 1.45; }
+
+/* ------------ Year page ------------ */
+.year-head { display: flex; align-items: center; justify-content: space-between; }
+.year-country { font-size: 15px; color: #0f172a; }
+.year-badge {
+  font-size: 12px; font-weight: 700;
+  background: #f1f5f9; border: 1px solid #e2e8f0;
+  color: #0f172a; padding: 3px 8px; border-radius: 999px;
+}
+.map-figure { margin: 0; }
+.map-figure img {
+  width: 100%;
+  height: 215px;
+  object-fit: contain;
+  background: #0b1320;
+  border-radius: 6px;
+  border: 1px solid #111827;
+}
+.map-figure figcaption {
+  text-align: center; font-size: 12px; color: #64748b; margin-top: 6px;
+}
+.story { color: #1f2937; font-size: 14px; line-height: 1.45; }
+
+/* ------------ Back page ------------ */
+.back { display: grid; place-content: center; text-align: center; gap: 6px; }
+.back h2 { font-size: 18px; }
+.back p { font-size: 13px; color: #475569; }
+
+/* =========================================================
+   ✨ Fancy animated cover (safe with HTMLFlipBook)
+   ========================================================= */
+.cover {
+  color: #fff;
+  overflow: hidden;
+  position: relative;
+}
+.cover-bg {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  border-radius: 10px;
+  padding: 28px;
+  position: relative;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, #1e3a8a 0%, #0b1220 60%, #080c16 100%),
+    url("/images/earth_glow.png");
+  background-size: cover;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.35);
+}
+.cover-bg > * { position: relative; z-index: 2; }   /* keep text above sheen */
+
+/* gentle float without 3D rotate (avoid flip conflicts) */
+@keyframes subtleFloat {
+  0%,100% { transform: translateY(0px); }
+  50%     { transform: translateY(-3px); }
+}
+.cover-bg { animation: subtleFloat 6s ease-in-out infinite; }
+
+/* moving light streak UNDER the text */
+.cover-bg::after{
+  content:"";
+  position:absolute; inset:-30%;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.14) 50%, transparent 60%);
+  transform: translateX(-70%) rotate(8deg);
+  animation: sweep 5.5s ease-in-out infinite;
+  pointer-events:none;
+  z-index: 1;
+}
+@keyframes sweep {
+  0%   { transform: translateX(-70%) rotate(8deg) }
+  60%  { transform: translateX(40%)  rotate(8deg) }
+  100% { transform: translateX(120%) rotate(8deg) }
+}
+
+/* embossed headline */
+.cover-title{
+  font-size: 28px; font-weight: 800; letter-spacing:.3px;
+  text-shadow: 0 1px 0 rgba(255,255,255,.08), 0 10px 30px rgba(0,0,0,.5);
+}
+.cover-subtitle{ opacity:.9; margin-top:8px; font-size:14px }
+
+/* =========================================================
+   🛡️ Compatibility fixes with HTMLFlipBook
+   - Remove 3D hover rotations (they fight the page flip)
+   - Guard against backface culling/clipping
+   ========================================================= */
+
+/* Safe hover (no rotateX/Y) */
+.terra-book .page:hover .page-content {
+  transform: translateY(-1px);              /* tiny lift only */
+  filter: brightness(1.02);
+  box-shadow: 0 10px 20px rgba(0,0,0,.12);
+  transition: transform .25s ease, filter .25s ease, box-shadow .25s ease;
+}
+
+/* Prevent half-page disappearing during flip */
+.terra-book .page,
+.terra-book .page .page-content,
+.terra-book .map-figure img,
+.terra-book .country-cover {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0); /* force compositing without creating 3D rotation */
+}
+
+/* Keep everything inside the page bounds */
+.terra-book .page * {
+  max-width: 100%;
+}
