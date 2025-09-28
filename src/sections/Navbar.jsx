@@ -2,16 +2,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { navLinks } from '../constants/index.js';
 
-const SkipLink = () => (
-  <a
-    href="#main"
-    className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] bg-black/80 text-white px-3 py-2 rounded-lg"
-  >
-    Skip to content
-  </a>
-);
+// const SkipLink = () => (
+//   <a
+//     href="#main"
+//     className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] bg-black/80 text-white px-3 py-2 rounded-lg"
+//   >
+//     Skip to content
+//   </a>
+// );
 
-const NavItems = ({ activeId, onClick = () => {} }) => {
+const NavItems = ({ activeId, onClick = () => { } }) => {
   return (
     <ul className="flex flex-col sm:flex-row gap-6 sm:gap-8">
       {navLinks.map((item) => {
@@ -127,14 +127,9 @@ const Navbar = () => {
         style={{ width: `${progress * 100}%` }}
       />
 
-      <SkipLink />
+      {/* <SkipLink /> */}
 
       <div
-        className={[
-          'transition-all',
-          'backdrop-blur-md',
-          scrolled ? 'bg-black/40 border-b border-white/10' : 'bg-transparent'
-        ].join(' ')}
       >
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between py-4 relative">
@@ -153,7 +148,7 @@ const Navbar = () => {
             </nav>
 
             {/* Right-side buttons */}
-            <div className="hidden sm:flex items-center gap-2">
+            {/* <div className="hidden sm:flex items-center gap-2">
               <button
                 onClick={openPalette}
                 className="text-white/90 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-3 py-2 text-sm"
@@ -167,7 +162,7 @@ const Navbar = () => {
               >
                 Contact
               </a>
-            </div>
+            </div> */}
 
             {/* Mobile toggle */}
             <button

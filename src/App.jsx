@@ -4,7 +4,6 @@ import Navbar from './sections/Navbar.jsx';
 const App = () => {
   return (
     <div className="relative w-full h-screen">
-      <Navbar />
       <Hero />
     </div>
   );

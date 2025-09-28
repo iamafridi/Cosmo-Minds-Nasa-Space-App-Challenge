@@ -1,194 +1,193 @@
 export const locations = [
   {
     id: 1,
-    name: "Washington, D.C., USA",
-    lat: 38.9072,
-    lng: -77.0369,
-    timezone: "UTC-5",
-    region: "North America",
+    name: "Argentina",
+    code: "ARG",
+    lat: -34.6118,
+    lng: -58.396, // Buenos Aires
+    timezone: "UTC-3",
+    region: "South America",
     description:
-      "Capital of the United States, a hub for politics and global diplomacy.",
+      "Argentina's capital, vibrant startup culture and creative industries.",
   },
   {
     id: 2,
-    name: "Ottawa, Canada",
-    lat: 45.4215,
-    lng: -75.6972,
-    timezone: "UTC-5",
-    region: "North America",
-    description:
-      "Canada's capital, known for tech growth and government institutions.",
-  },
-  {
-    id: 3,
-    name: "London, UK",
-    lat: 51.5074,
-    lng: -0.1278,
-    timezone: "UTC+0",
-    region: "Europe",
-    description:
-      "Financial technology capital, leading in blockchain and digital banking.",
-  },
-  {
-    id: 4,
-    name: "Berlin, Germany",
-    lat: 52.52,
-    lng: 13.405,
-    timezone: "UTC+1",
-    region: "Europe",
-    description:
-      "European startup capital, strong in AI, mobility, and clean technology.",
-  },
-  {
-    id: 5,
-    name: "Paris, France",
-    lat: 48.8566,
-    lng: 2.3522,
-    timezone: "UTC+1",
-    region: "Europe",
-    description:
-      "Cultural and technological hub, leading in fashion-tech and green innovation.",
-  },
-  {
-    id: 6,
-    name: "Tokyo, Japan",
-    lat: 35.6762,
-    lng: 139.6503,
-    timezone: "UTC+9",
-    region: "Asia",
-    description:
-      "Global technology leader, pioneering robotics and advanced manufacturing.",
-  },
-  {
-    id: 7,
-    name: "Beijing, China",
-    lat: 39.9042,
-    lng: 116.4074,
-    timezone: "UTC+8",
-    region: "Asia",
-    description:
-      "China's capital, a powerhouse of tech, finance, and global trade.",
-  },
-  {
-    id: 8,
-    name: "Chittagong, Bangladesh",
-    lat: 22.3569,
-    lng: 91.7832,
+    name: "Bangladesh",
+    code: "BGD",
+    lat: 23.8103,
+    lng: 90.4125, // Dhaka
     timezone: "UTC+6",
     region: "South Asia",
     description:
-      "Major port city and commercial hub, gateway to South Asian markets.",
+      "Bangladesh's capital and largest city, major commercial center.",
   },
   {
-    id: 9,
-    name: "Moscow, Russia",
-    lat: 55.7558,
-    lng: 37.6173,
-    timezone: "UTC+3",
-    region: "Europe/Asia",
-    description:
-      "Russia’s capital, rich in science, aerospace, and energy industries.",
+    id: 3,
+    name: "Japan",
+    code: "JPN",
+    lat: 35.6762,
+    lng: 139.6503, // Tokyo
+    timezone: "UTC+9",
+    region: "Asia",
+    description: "Japan's capital, global technology and financial leader.",
   },
   {
-    id: 10,
-    name: "Canberra, Australia",
-    lat: -35.2809,
-    lng: 149.13,
-    timezone: "UTC+10",
-    region: "Oceania",
-    description:
-      "Australia’s capital, with a growing defense, space, and tech ecosystem.",
-  },
-  {
-    id: 11,
-    name: "Wellington, New Zealand",
-    lat: -41.2865,
-    lng: 174.7762,
-    timezone: "UTC+12",
-    region: "Oceania",
-    description:
-      "New Zealand’s capital, strong in film-tech, innovation, and sustainability.",
-  },
-  {
-    id: 12,
-    name: "Brasília, Brazil",
-    lat: -15.8267,
-    lng: -47.9218,
-    timezone: "UTC-3",
-    region: "South America",
-    description:
-      "Brazil’s planned capital, growing in government tech and fintech sectors.",
-  },
-  {
-    id: 13,
-    name: "Buenos Aires, Argentina",
-    lat: -34.6037,
-    lng: -58.3816,
-    timezone: "UTC-3",
-    region: "South America",
-    description:
-      "Argentina’s capital, vibrant startup culture and creative industries.",
-  },
-  {
-    id: 14,
-    name: "Cairo, Egypt",
-    lat: 30.0444,
-    lng: 31.2357,
-    timezone: "UTC+2",
-    region: "Africa",
-    description:
-      "Africa’s largest city, a major hub for finance, culture, and innovation.",
-  },
-  {
-    id: 15,
-    name: "Nairobi, Kenya",
+    id: 4,
+    name: "Kenya",
+    code: "KEN",
     lat: -1.2921,
-    lng: 36.8219,
+    lng: 36.8219, // Nairobi
     timezone: "UTC+3",
     region: "Africa",
-    description:
-      "East Africa’s tech capital, home to growing innovation and fintech hubs.",
+    description: "Kenya's capital, East Africa's tech and innovation hub.",
+  },
+  {
+    id: 5,
+    name: "United States",
+    code: "USA",
+    lat: 40.7128,
+    lng: -74.006, // New York City
+    timezone: "UTC-5",
+    region: "North America",
+    description: "USA's largest city, global financial capital.",
   },
 ];
 
-export const colors = [
-  "#ff4500", // Orange Red
-  "#00ff88", // Spring Green
-  "#0088ff", // Deep Sky Blue
-  "#ff0088", // Deep Pink
-  "#88ff00", // Chartreuse
-  "#8800ff", // Blue Violet
-  "#ffff00", // Yellow
-  "#ff8800", // Dark Orange
-  "#00ffff", // Cyan
-  "#ff0000", // Red
-];
+// export const arcTypes = [
+//   // Core NASA Terra Instruments
+//   {
+//     name: "MODIS",
+//     color: "#FF1744",
+//     description: "Moderate Resolution Imaging Spectroradiometer",
+//   },
+//   {
+//     name: "ASTER",
+//     color: "#00E676",
+//     description:
+//       "Advanced Spaceborne Thermal Emission and Reflection Radiometer",
+//   },
+//   {
+//     name: "CERES",
+//     color: "#2979FF",
+//     description: "Clouds and the Earth's Radiant Energy System",
+//   },
+//   {
+//     name: "MISR",
+//     color: "#FF6D00",
+//     description: "Multi-angle Imaging SpectroRadiometer",
+//   },
+//   {
+//     name: "MOPITT",
+//     color: "#9C27B0",
+//     description: "Measurements of Pollution in the Troposphere",
+//   },
 
-// Generate arcs data
+//   // Environmental Data Streams
+//   { name: "Climate", color: "#00BCD4", description: "Climate data exchange" },
+//   {
+//     name: "Atmospheric",
+//     color: "#4CAF50",
+//     description: "Atmospheric monitoring",
+//   },
+//   { name: "Ocean", color: "#3F51B5", description: "Ocean temperature data" },
+//   { name: "Land", color: "#FF5722", description: "Land surface monitoring" },
+//   { name: "Ice", color: "#607D8B", description: "Ice and snow coverage" },
+//   { name: "Carbon", color: "#795548", description: "Carbon cycle monitoring" },
+//   {
+//     name: "Aerosol",
+//     color: "#FFC107",
+//     description: "Aerosol and pollution tracking",
+//   },
+
+//   // Additional Earth Observation Data
+//   {
+//     name: "Temperature",
+//     color: "#E91E63",
+//     description: "Surface temperature monitoring",
+//   },
+//   {
+//     name: "Vegetation",
+//     color: "#8BC34A",
+//     description: "Vegetation index tracking",
+//   },
+//   {
+//     name: "CloudCover",
+//     color: "#9E9E9E",
+//     description: "Cloud coverage analysis",
+//   },
+//   {
+//     name: "Precipitation",
+//     color: "#03A9F4",
+//     description: "Rainfall and precipitation data",
+//   },
+//   {
+//     name: "AirQuality",
+//     color: "#FFEB3B",
+//     description: "Air pollution monitoring",
+//   },
+//   { name: "UVRadiation", color: "#FF9800", description: "UV radiation levels" },
+//   { name: "SnowCover", color: "#E0E0E0", description: "Snow and ice coverage" },
+//   { name: "DroughtIndex", color: "#8D6E63", description: "Drought monitoring" },
+//   {
+//     name: "FireDetection",
+//     color: "#D32F2F",
+//     description: "Wildfire detection",
+//   },
+//   { name: "FloodMonitoring", color: "#1976D2", description: "Flood tracking" },
+//   {
+//     name: "CoastalChanges",
+//     color: "#00796B",
+//     description: "Coastal erosion monitoring",
+//   },
+//   {
+//     name: "UrbanHeat",
+//     color: "#F57C00",
+//     description: "Urban heat island effect",
+//   },
+// ];
+
+// Vibrant backup colors
+export const colors = ["#FFFF00", "#FF6347", "#40FF00"];
+
+// Simple function to generate multiple arcs between each country pair
 export const generateArcsData = () => {
   const arcsData = [];
-  let colorIndex = 0;
+  let arcId = 0;
 
-  locations.forEach((start, i) => {
-    locations.forEach((end, j) => {
+  for (let i = 0; i < locations.length; i++) {
+    for (let j = 0; j < locations.length; j++) {
       if (i !== j) {
-        arcsData.push({
-          startLat: start.lat,
-          startLng: start.lng,
-          endLat: end.lat,
-          endLng: end.lng,
-          color: colors[colorIndex % colors.length],
-        });
-        colorIndex++;
+        const startCountry = locations[i];
+        const endCountry = locations[j];
+
+        // Create 12 arcs between each country pair (simple numbered arcs)
+        for (let arcNum = 1; arcNum <= 12; arcNum++) {
+          arcsData.push({
+            id: `arc-${arcId++}`,
+            name: `${startCountry.code} → ${endCountry.code} (${arcNum})`,
+            startLat: startCountry.lat,
+            startLng: startCountry.lng,
+            endLat: endCountry.lat,
+            endLng: endCountry.lng,
+            color: colors[(arcNum - 1) % colors.length], // Cycle through colors
+            arcNumber: arcNum,
+            startCountry: startCountry.code,
+            endCountry: endCountry.code,
+            animateTime: 500 + arcNum * 150,
+            strokeWidth: 0.1 + arcNum * 0.02,
+            dashLength: 0.2 + arcNum * 0.03,
+            dashGap: 0.15,
+          });
+        }
       }
-    });
-  });
+    }
+  }
 
   return arcsData;
 };
 
 // Generate stars data
-export const generateStarsData = (count = 1000) => {
+export const generateStarsData = (count = 10000) => {
   const stars = [];
   for (let i = 0; i < count; i++) {
     const distance = 150 + Math.random() * 100;
@@ -207,4 +206,21 @@ export const generateStarsData = (count = 1000) => {
     });
   }
   return stars;
+};
+
+// Simple utility functions
+export const getArcsByCountry = (countryCode) => {
+  const arcs = generateArcsData();
+  return arcs.filter(
+    (arc) => arc.startCountry === countryCode || arc.endCountry === countryCode
+  );
+};
+
+export const getConnectionBetweenCountries = (country1, country2) => {
+  const arcs = generateArcsData();
+  return arcs.filter(
+    (arc) =>
+      (arc.startCountry === country1 && arc.endCountry === country2) ||
+      (arc.startCountry === country2 && arc.endCountry === country1)
+  );
 };

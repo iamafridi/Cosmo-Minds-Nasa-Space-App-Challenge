@@ -14,11 +14,11 @@ export const navLinks = [
     name: "About Us",
     href: "/about",
   },
-  {
-    id: 4,
-    name: "Contact Us",
-    href: "/contact",
-  },
+  // {
+  //   id: 4,
+  //   name: "Contact Us",
+  //   href: "/contact",
+  // },
 ];
 
 // export const calculateSizes = (isSmall, isMobile, isTablet) => {

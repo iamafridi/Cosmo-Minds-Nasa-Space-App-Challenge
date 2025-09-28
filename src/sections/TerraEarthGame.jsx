@@ -84,81 +84,243 @@ const TerraEarthGame = () => {
 
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
 
-  const [panelPosition, setPanelPosition] = useState({ x: 24, y: window.innerHeight - 240 });
+  // Year data modal state
+  const [showYearModal, setShowYearModal] = useState(false);
+  const [selectedYearData, setSelectedYearData] = useState(null);
+  const [yearModalPosition, setYearModalPosition] = useState({ x: 200, y: 100 });
+
+  const [panelPosition, setPanelPosition] = useState({ x: 24, y: window.innerHeight - 280 });
   const [climatePanelPosition, setClimatePanelPosition] = useState({ x: 24, y: 24 });
+
+  // New state for JSON data
+  const [countriesData, setCountriesData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const draggingRef = useRef(false);
   const draggingClimateRef = useRef(false);
+  const draggingYearModalRef = useRef(false);
   const lastPosRef = useRef({ x: 0, y: 0 });
 
   const years = Array.from({ length: 25 }, (_, i) => 2000 + i);
 
-  // ==== Marker data (mock series) ====
-  const countryData = useMemo(
-    () => ({
-      'United Kingdom': {
-        lat: 55.3781, lng: -3.436, emoji: '🇬🇧',
-        climate: { temperature: Array(25).fill().map(() => 10 + Math.random() * 5), co2: Array(25).fill().map(() => 500 + Math.random() * 50) },
-        disasters: { earthquakes: Array(25).fill().map(() => Math.floor(Math.random() * 5)), floods: Array(25).fill().map(() => Math.floor(Math.random() * 3)) },
-        urban: { population: Array(25).fill().map(() => 80 + Math.random() * 5) },
-      },
-      Bangladesh: {
-        lat: 23.685, lng: 90.3563, emoji: '🇧🇩',
-        climate: { temperature: Array(25).fill().map(() => 25 + Math.random() * 3), co2: Array(25).fill().map(() => 100 + Math.random() * 30) },
-        disasters: { earthquakes: Array(25).fill().map(() => Math.floor(Math.random() * 2)), floods: Array(25).fill().map(() => Math.floor(Math.random() * 10)) },
-        urban: { population: Array(25).fill().map(() => 35 + Math.random() * 5) },
-      },
-      Australia: {
-        lat: -25.2744, lng: 133.7751, emoji: '🇦🇺',
-        climate: { temperature: Array(25).fill().map(() => 22 + Math.random() * 5), co2: Array(25).fill().map(() => 300 + Math.random() * 50) },
-        disasters: { earthquakes: Array(25).fill().map(() => Math.floor(Math.random() * 3)), floods: Array(25).fill().map(() => Math.floor(Math.random() * 2)) },
-        urban: { population: Array(25).fill().map(() => 85 + Math.random() * 5) },
-      },
-      Brazil: {
-        lat: -14.235, lng: -51.9253, emoji: '🇧🇷',
-        climate: { temperature: Array(25).fill().map(() => 27 + Math.random() * 3), co2: Array(25).fill().map(() => 400 + Math.random() * 50) },
-        disasters: { earthquakes: Array(25).fill().map(() => 0), floods: Array(25).fill().map(() => Math.floor(Math.random() * 5)) },
-        urban: { population: Array(25).fill().map(() => 90 + Math.random() * 5) },
-      },
-      Canada: {
-        lat: 56.1304, lng: -106.3468, emoji: '🇨🇦',
-        climate: { temperature: Array(25).fill().map(() => -5 + Math.random() * 5), co2: Array(25).fill().map(() => 600 + Math.random() * 50) },
-        disasters: { earthquakes: Array(25).fill().map(() => 1), floods: Array(25).fill().map(() => Math.floor(Math.random() * 3)) },
-        urban: { population: Array(25).fill().map(() => 70 + Math.random() * 5) },
-      },
-      Kenya: {
-        lat: -0.0236, lng: 37.9062, emoji: '🇰🇪',
-        climate: { temperature: Array(25).fill().map(() => 23 + Math.random() * 3), co2: Array(25).fill().map(() => 120 + Math.random() * 20) },
-        disasters: { earthquakes: Array(25).fill().map(() => Math.floor(Math.random() * 1)), floods: Array(25).fill().map(() => Math.floor(Math.random() * 7)) },
-        urban: { population: Array(25).fill().map(() => 30 + Math.random() * 7) },
-      },
-      Japan: {
-        lat: 36.2048, lng: 138.2529, emoji: '🇯🇵',
-        climate: { temperature: Array(25).fill().map(() => 15 + Math.random() * 3), co2: Array(25).fill().map(() => 450 + Math.random() * 60) },
-        disasters: { earthquakes: Array(25).fill().map(() => Math.floor(Math.random() * 8)), floods: Array(25).fill().map(() => Math.floor(Math.random() * 5)) },
-        urban: { population: Array(25).fill().map(() => 92 + Math.random() * 3) },
-      },
-      'United States': {
-        lat: 37.0902, lng: -95.7129, emoji: '🇺🇸',
-        climate: { temperature: Array(25).fill().map(() => 12 + Math.random() * 4), co2: Array(25).fill().map(() => 650 + Math.random() * 70) },
-        disasters: { earthquakes: Array(25).fill().map(() => Math.floor(Math.random() * 7)), floods: Array(25).fill().map(() => Math.floor(Math.random() * 5)) },
-        urban: { population: Array(25).fill().map(() => 82 + Math.random() * 3) },
-      },
-      Argentina: {
-        lat: -38.4161, lng: -63.6167, emoji: '🇦🇷',
-        climate: { temperature: Array(25).fill().map(() => 18 + Math.random() * 4), co2: Array(25).fill().map(() => 350 + Math.random() * 60) },
-        disasters: { earthquakes: Array(25).fill().map(() => Math.floor(Math.random() * 3)), floods: Array(25).fill().map(() => Math.floor(Math.random() * 4)) },
-        urban: { population: Array(25).fill().map(() => 91 + Math.random() * 3) },
-      },
-      Chile: {
-        lat: -35.6751, lng: -71.5430, emoji: '🇨🇱',
-        climate: { temperature: Array(25).fill().map(() => 14 + Math.random() * 4), co2: Array(25).fill().map(() => 300 + Math.random() * 40) },
-        disasters: { earthquakes: Array(25).fill().map(() => Math.floor(Math.random() * 9)), floods: Array(25).fill().map(() => Math.floor(Math.random() * 4)) },
-        urban: { population: Array(25).fill().map(() => 88 + Math.random() * 3) },
-      },
-    }),
-    []
-  );
+  // Fetch JSON data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/datas/all-countries-data.json');
+        if (!response.ok) {
+          throw new Error('Failed to fetch countries data');
+        }
+        const data = await response.json();
+        setCountriesData(data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching countries data:', error);
+        setAlert({ open: true, type: 'danger', text: 'Failed to load country data' });
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Helper function to get full data for a specific year and country
+  const getFullYearData = (countryName, year) => {
+    if (!countriesData || !countriesData[countryName]) return null;
+
+    const countryData = countriesData[countryName];
+    const result = {};
+
+    // Get climate data
+    const climateKey = `climate_${year}`;
+    if (countryData.climate && countryData.climate[climateKey]) {
+      result.climate = countryData.climate[climateKey];
+    }
+
+    // Get deforestation data
+    const deforestationKey = `deforestation_${year}`;
+    if (countryData.deforestation && countryData.deforestation[deforestationKey]) {
+      result.deforestation = countryData.deforestation[deforestationKey];
+    }
+
+    // Get urban data
+    const urbanKey = `urban_${year}`;
+    if (countryData.urban && countryData.urban[urbanKey]) {
+      result.urban = countryData.urban[urbanKey];
+    }
+
+    return result;
+  };
+
+  // Helper function to extract data for a specific year and country
+  const getCountryDataForYear = (countryName, year, dataType) => {
+    if (!countriesData || !countriesData[countryName]) return null;
+
+    const countryData = countriesData[countryName];
+
+    switch (dataType) {
+      case 'climate':
+        const climateKey = `climate_${year}`;
+        return countryData.climate?.[climateKey] || null;
+      case 'deforestation':
+        const deforestationKey = `deforestation_${year}`;
+        return countryData.deforestation?.[deforestationKey] || null;
+      case 'urban':
+        const urbanKey = `urban_${year}`;
+        return countryData.urban?.[urbanKey] || null;
+      default:
+        return null;
+    }
+  };
+
+  // Function to open year data modal
+  const openYearDataModal = (countryName, year) => {
+    if (!countriesData || !countriesData[countryName]) {
+      setAlert({ open: true, type: 'warning', text: `No data available for ${countryName} in ${year}` });
+      return;
+    }
+
+    const countryData = countriesData[countryName];
+    const result = {};
+
+    // Get climate data
+    const climateKey = `climate_${year}`;
+    if (countryData.climate && countryData.climate[climateKey]) {
+      result.climate = countryData.climate[climateKey];
+    }
+
+    // Get deforestation data
+    const deforestationKey = `deforestation_${year}`;
+    if (countryData.deforestation && countryData.deforestation[deforestationKey]) {
+      result.deforestation = countryData.deforestation[deforestationKey];
+    }
+
+    // Get urban data
+    const urbanKey = `urban_${year}`;
+    if (countryData.urban && countryData.urban[urbanKey]) {
+      result.urban = countryData.urban[urbanKey];
+    }
+
+    if (Object.keys(result).length > 0) {
+      setSelectedYearData({
+        country: countryName,
+        year: year,
+        data: result
+      });
+      setShowYearModal(true);
+    } else {
+      setAlert({ open: true, type: 'warning', text: `No data available for ${countryName} in ${year}` });
+    }
+  };
+
+  // Extract numerical data from text descriptions using regex
+  const extractNumberFromText = (text, pattern) => {
+    if (!text) return 0;
+    const match = text.match(pattern);
+    return match ? parseFloat(match[1]) : 0;
+  };
+
+  // Create processed country data with coordinates and extracted numerical values
+  const countryData = useMemo(() => {
+    if (!countriesData) return {};
+
+    const coordinates = {
+      'Argentina': { lat: -38.4161, lng: -63.6167, emoji: '🇦🇷' },
+      'USA': { lat: 37.0902, lng: -95.7129, emoji: '🇺🇸' },
+      'Japan': { lat: 36.2048, lng: 138.2529, emoji: '🇯🇵' },
+      'Kenya': { lat: -0.0236, lng: 37.9062, emoji: '🇰🇪' },
+      'Chile': { lat: -35.6751, lng: -71.5430, emoji: '🇨🇱' },
+      'Australia': { lat: -25.2744, lng: 133.7751, emoji: '🇦🇺' },
+      'Brazil': { lat: -14.235, lng: -51.9253, emoji: '🇧🇷' },
+      'Canada': { lat: 56.1304, lng: -106.3468, emoji: '🇨🇦' },
+      'United Kingdom': { lat: 55.3781, lng: -3.436, emoji: '🇬🇧' },
+      'Bangladesh': { lat: 23.685, lng: 90.3563, emoji: '🇧🇩' },
+    };
+
+    const processedData = {};
+
+    Object.keys(countriesData).forEach(countryName => {
+      const coords = coordinates[countryName];
+      if (!coords) return;
+
+      // Create arrays for time series data
+      const temperatureData = [];
+      const co2Data = [];
+      const forestCoverData = [];
+      const urbanizationData = [];
+      const floodsData = [];
+      const droughtsData = [];
+
+      years.forEach(year => {
+        // Climate data extraction
+        const climateText = getCountryDataForYear(countryName, year, 'climate');
+        if (climateText) {
+          // Extract temperature (looking for patterns like "27.3°C" or "temperature of 15.2°C")
+          const temp = extractNumberFromText(climateText, /(\d+\.?\d*)\s*°?C/i) ||
+            extractNumberFromText(climateText, /temperature.*?(\d+\.?\d*)/i) ||
+            20 + Math.random() * 10; // fallback
+          temperatureData.push(temp);
+
+          // Extract CO2 (looking for patterns like "3.50 tons per capita" or "emissions at 1.20")
+          const co2 = extractNumberFromText(climateText, /(\d+\.?\d*)\s*tons per capita/i) ||
+            extractNumberFromText(climateText, /emissions.*?(\d+\.?\d*)/i) ||
+            200 + Math.random() * 100; // fallback
+          co2Data.push(co2 * 100); // Scale up for visualization
+        } else {
+          temperatureData.push(20 + Math.random() * 10);
+          co2Data.push(200 + Math.random() * 100);
+        }
+
+        // Deforestation data
+        const deforestationText = getCountryDataForYear(countryName, year, 'deforestation');
+        if (deforestationText) {
+          const forestCover = extractNumberFromText(deforestationText, /(\d+\.?\d*)%.*forest/i) ||
+            extractNumberFromText(deforestationText, /covered.*?(\d+\.?\d*)%/i) ||
+            30 + Math.random() * 20; // fallback
+          forestCoverData.push(forestCover);
+        } else {
+          forestCoverData.push(30 + Math.random() * 20);
+        }
+
+        // Urban data
+        const urbanText = getCountryDataForYear(countryName, year, 'urban');
+        if (urbanText) {
+          const urbanization = extractNumberFromText(urbanText, /urbanization.*?(\d+\.?\d*)%/i) ||
+            extractNumberFromText(urbanText, /(\d+\.?\d*)%.*urban/i) ||
+            50 + Math.random() * 30; // fallback
+          urbanizationData.push(urbanization);
+        } else {
+          urbanizationData.push(50 + Math.random() * 30);
+        }
+
+        // Mock disaster data (floods and droughts) - since not explicitly in JSON structure
+        floodsData.push(Math.floor(Math.random() * 5));
+        droughtsData.push(Math.floor(Math.random() * 3));
+      });
+
+      // Map country names to display names for compatibility
+      let displayName = countryName;
+      if (countryName === 'USA') displayName = 'United States';
+
+      processedData[displayName] = {
+        ...coords,
+        climate: {
+          temperature: temperatureData,
+          co2: co2Data,
+          forestCover: forestCoverData,
+        },
+        disasters: {
+          floods: floodsData,
+          droughts: droughtsData,
+        },
+        urban: {
+          population: urbanizationData,
+        },
+      };
+    });
+
+    return processedData;
+  }, [countriesData, years]);
 
   const markerData = useMemo(
     () => Object.entries(countryData).map(([name, data]) => ({
@@ -178,7 +340,7 @@ const TerraEarthGame = () => {
     ctx.font = '48px sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillStyle = '#ffd54a';
-    ctx.fillText(`📍 ${d.name}`, 128, 36);
+    ctx.fillText(`🔍 ${d.name}`, 128, 36);
     const texture = new THREE.CanvasTexture(canvas);
 
     const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: false, depthWrite: false }));
@@ -274,6 +436,7 @@ const TerraEarthGame = () => {
   const startDrag = (clientX, clientY, type = "control") => {
     if (type === "control") draggingRef.current = true;
     if (type === "climate") draggingClimateRef.current = true;
+    if (type === "yearModal") draggingYearModalRef.current = true;
     lastPosRef.current = { x: clientX, y: clientY };
     document.body.style.userSelect = 'none';
     document.body.style.touchAction = 'none';
@@ -281,6 +444,7 @@ const TerraEarthGame = () => {
   const stopDrag = () => {
     draggingRef.current = false;
     draggingClimateRef.current = false;
+    draggingYearModalRef.current = false;
     document.body.style.userSelect = '';
     document.body.style.touchAction = '';
   };
@@ -302,6 +466,12 @@ const TerraEarthGame = () => {
     if (draggingClimateRef.current) {
       setClimatePanelPosition((prev) => ({
         x: Math.min(windowSize.width - 320, Math.max(0, prev.x + dx)),
+        y: Math.min(windowSize.height - 400, Math.max(0, prev.y + dy)),
+      }));
+    }
+    if (draggingYearModalRef.current) {
+      setYearModalPosition((prev) => ({
+        x: Math.min(windowSize.width - 500, Math.max(0, prev.x + dx)),
         y: Math.min(windowSize.height - 400, Math.max(0, prev.y + dy)),
       }));
     }
@@ -334,7 +504,8 @@ const TerraEarthGame = () => {
         color: 'from-red-500 to-yellow-400',
         data: [
           { label: 'Temperature (°C)', value: climate.temperature[yearIndex], trend: climate.temperature },
-          { label: 'CO₂ Emissions (Mt)', value: climate.co2[yearIndex], trend: climate.co2 },
+          { label: 'CO₂ Emissions (scaled)', value: climate.co2[yearIndex], trend: climate.co2 },
+          { label: 'Forest Cover (%)', value: climate.forestCover[yearIndex], trend: climate.forestCover },
         ],
       },
       disasters: {
@@ -342,8 +513,8 @@ const TerraEarthGame = () => {
         icon: <Zap className="w-4 h-4" />,
         color: 'from-purple-500 to-pink-500',
         data: [
-          { label: 'Earthquakes', value: disasters.earthquakes[yearIndex], trend: disasters.earthquakes },
           { label: 'Floods', value: disasters.floods[yearIndex], trend: disasters.floods },
+          { label: 'Droughts', value: disasters.droughts[yearIndex], trend: disasters.droughts },
         ],
       },
       urban: {
@@ -371,7 +542,28 @@ const TerraEarthGame = () => {
         legend: { labels: { color: 'white' } },
         title: { display: true, text: currentPanel.title + ' Trends', color: 'white', font: { size: 14 } },
       },
-      scales: { x: { ticks: { color: 'white' } }, y: { ticks: { color: 'white' } } },
+      scales: {
+        x: {
+          ticks: { color: 'white' },
+          // Make year labels clickable by handling chart click events
+        },
+        y: { ticks: { color: 'white' } }
+      },
+      // ---------- FIX: open year modal when clicking chart points ----------
+      onClick: (event, elements) => {
+        if (elements.length > 0) {
+          const clickedIndex = elements[0].index;
+          setYearIndex(clickedIndex);
+          // open modal for this country and year
+          openYearDataModal(name, years[clickedIndex]);
+        }
+      },
+      onHover: (event, elements) => {
+        try {
+          // event.native may be undefined in some contexts — guard it
+          if (event?.native?.target) event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+        } catch (e) { /* ignore */ }
+      },
     };
 
     const isMobile = windowSize.width < 900;
@@ -395,7 +587,19 @@ const TerraEarthGame = () => {
         </div>
 
         <div className="flex justify-between items-center mb-2">
-          <h3 className="text-white font-bold text-lg">{emoji} {name} — {years[yearIndex]}</h3>
+          <h3 className="text-white font-bold text-lg">
+            {emoji} {name} —{' '}
+            <button
+              onClick={() => {
+                // open modal when clicking the year in the header
+                openYearDataModal(name, years[yearIndex]);
+              }}
+              className="inline-block text-white font-bold hover:underline"
+              title={`View ${name} data for ${years[yearIndex]}`}
+            >
+              {years[yearIndex]}
+            </button>
+          </h3>
           <button onClick={() => setSelectedCountry(null)} className="text-gray-400 hover:text-white text-xl">×</button>
         </div>
 
@@ -404,9 +608,8 @@ const TerraEarthGame = () => {
             <button
               key={key}
               onClick={() => setActivePanel(key)}
-              className={`flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all ${
-                activePanel === key ? `bg-gradient-to-r ${panel.color} text-white` : 'text-gray-400 hover:text-white'
-              }`}
+              className={`flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all ${activePanel === key ? `bg-gradient-to-r ${panel.color} text-white` : 'text-gray-400 hover:text-white'
+                }`}
             >
               {panel.icon}<span className="hidden sm:inline">{panel.title}</span>
             </button>
@@ -415,6 +618,7 @@ const TerraEarthGame = () => {
 
         <div className="h-44 mb-4">
           <Line data={chartData} options={chartOptions} />
+          <div className="text-xs text-white/70 mt-1 text-center">Click on chart points to jump to that year</div>
         </div>
 
         {currentPanel.data.map((item, idx) => (
@@ -425,9 +629,8 @@ const TerraEarthGame = () => {
               <div
                 className="bg-white rounded-full h-2 transition-all duration-500"
                 style={{
-                  width: `${
-                    Math.min(100, Math.abs(item.trend[yearIndex]) / Math.max(...item.trend.map(v => Math.abs(v))) * 100)
-                  }%`,
+                  width: `${Math.min(100, Math.abs(item.trend[yearIndex]) / Math.max(...item.trend.map(v => Math.abs(v))) * 100)
+                    }%`,
                 }}
               />
             </div>
@@ -437,16 +640,147 @@ const TerraEarthGame = () => {
     );
   };
 
+  // Year Data Modal Component
+  const YearDataModal = () => {
+    if (!showYearModal || !selectedYearData) return null;
+
+    const { country, year, data } = selectedYearData;
+    const isMobile = windowSize.width < 640;
+
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          style={{
+            left: `${yearModalPosition.x}px`,
+            top: `${yearModalPosition.y}px`,
+            position: 'absolute'
+          }}
+          className={`${isMobile ? 'w-[95vw] max-h-[80vh]' : 'w-[500px] max-h-[600px]'} 
+                     rounded-xl bg-gray-900/95 backdrop-blur-md border border-white/20 
+                     overflow-hidden z-[99999] shadow-2xl`}
+        >
+          {/* Header with drag handle */}
+          <div
+            className="w-full bg-gradient-to-r from-blue-900 to-purple-300 p-4 cursor-grab active:cursor-grabbing"
+            onMouseDown={(e) => startDrag(e.clientX, e.clientY, "yearModal")}
+            onTouchStart={(e) => {
+              if (e.touches?.length) {
+                const t = e.touches[0];
+                startDrag(t.clientX, t.clientY, "yearModal");
+              }
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-1 bg-white/60 rounded-full" />
+                <h3 className="text-white font-bold text-lg">
+                  {country} - {year}
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowYearModal(false)}
+                className="text-white/80 hover:text-white text-2xl font-bold transition-colors"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-4 overflow-y-auto max-h-[500px]">
+            {/* Climate Section */}
+            {data.climate && (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Thermometer className="w-5 h-5 text-red-400" />
+                  <h4 className="text-white font-semibold text-lg">Climate Overview</h4>
+                </div>
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                  <p className="text-gray-200 text-sm leading-relaxed whitespace-pre-wrap">
+                    {data.climate}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Deforestation Section */}
+            {data.deforestation && (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-5 h-5 text-green-400 text-xl">🌳</div>
+                  <h4 className="text-white font-semibold text-lg">Deforestation & Forest Cover</h4>
+                </div>
+                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                  <p className="text-gray-200 text-sm leading-relaxed whitespace-pre-wrap">
+                    {data.deforestation}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Urban Section */}
+            {data.urban && (
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Building2 className="w-5 h-5 text-blue-400" />
+                  <h4 className="text-white font-semibold text-lg">Urban Development</h4>
+                </div>
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                  <p className="text-gray-200 text-sm leading-relaxed whitespace-pre-wrap">
+                    {data.urban}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* No data message */}
+            {!data.climate && !data.deforestation && !data.urban && (
+              <div className="text-center py-8">
+                <div className="text-gray-400 text-lg mb-2">📊</div>
+                <p className="text-gray-400">No detailed data available for this year.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="px-4 py-3 bg-gray-800/50 border-t border-white/10">
+            <div className="flex items-center justify-between text-xs text-gray-400">
+              <span>Source: Terra Earth Data Archive</span>
+              <span>Drag to move • Click × to close</span>
+            </div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  };
+
+  // Show loading state while data is being fetched
+  if (loading) {
+    return (
+      <div className="relative w-full h-screen bg-gray-900 overflow-hidden flex items-center justify-center">
+        <div className="text-white text-xl">Loading Terra Earth data...</div>
+      </div>
+    );
+  }
+
   const quickActions = [
-    { title: 'Reset view', desc: 'Zoom out & stop panels', icon: <RotateCcw className="w-4 h-4" />, onRun: () => {
-      setYearIndex(0); setSelectedCountry(null); setShowBookPanel(false); globeEl.current?.pointOfView({ altitude: 2.6 }, 900);
-    }},
+    {
+      title: 'Reset view', desc: 'Zoom out & stop panels', icon: <RotateCcw className="w-4 h-4" />, onRun: () => {
+        setYearIndex(0); setSelectedCountry(null); setShowBookPanel(false); globeEl.current?.pointOfView({ altitude: 2.6 }, 900);
+      }
+    },
     { title: isPlaying ? 'Pause auto-rotate' : 'Play auto-rotate', desc: 'Toggle globe rotation', icon: <Play className="w-4 h-4" />, onRun: () => setIsPlaying(v => !v) },
     { title: 'Show info', desc: 'Open help panel', icon: <Info className="w-4 h-4" />, onRun: () => setShowInfo(true) },
-    { title: 'Random country', desc: 'Jump & open story', icon: <Sparkles className="w-4 h-4" />, onRun: () => {
-      const keys = Object.keys(countryData); const r = keys[Math.floor(Math.random()*keys.length)];
-      jumpToCountry(r);
-    }},
+    {
+      title: 'Random country', desc: 'Jump & open story', icon: <Sparkles className="w-4 h-4" />, onRun: () => {
+        const keys = Object.keys(countryData); const r = keys[Math.floor(Math.random() * keys.length)];
+        jumpToCountry(r);
+      }
+    },
   ];
 
   return (
@@ -471,6 +805,9 @@ const TerraEarthGame = () => {
       {/* LEFT: Data Panel */}
       <AnimatePresence>{renderDataPanel()}</AnimatePresence>
 
+      {/* Year Data Modal */}
+      <YearDataModal />
+
       {/* RIGHT: Book Panel */}
       <RightBookPanel
         open={showBookPanel}
@@ -488,7 +825,7 @@ const TerraEarthGame = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            style={{ left: panelPosition.x, top: panelPosition.y, position: 'absolute', width: 340 }}
+            style={{ left: panelPosition.x, top: panelPosition.y, position: 'absolute', width: 540 }}
             className="pointer-events-auto bg-black/90 backdrop-blur-md p-4 flex flex-col gap-3 w-[340px] rounded-xl z-[99996]"
           >
             <div
@@ -549,7 +886,16 @@ const TerraEarthGame = () => {
                 onChange={(e) => setYearIndex(+e.target.value)}
                 className="flex-1 accent-teal-500"
               />
-              <span className="text-white text-lg font-bold min-w-[4rem]">{years[yearIndex]}</span>
+              {/* ---------- Command Pallet ---------- */}
+              <button
+                onClick={() => {
+                  if (selectedCountry) openYearDataModal(selectedCountry.name, years[yearIndex]);
+                }}
+                className="text-white text-lg font-bold min-w-[4rem] cursor-pointer"
+                title={selectedCountry ? `View ${selectedCountry.name} data for ${years[yearIndex]}` : `Set year to ${years[yearIndex]}`}
+              >
+                {years[yearIndex]}
+              </button>
 
               <button
                 onClick={() => setYearIndex(prev => Math.max(0, prev - 1))}
@@ -566,6 +912,32 @@ const TerraEarthGame = () => {
               >
                 +
               </button>
+            </div>
+
+            {/* Year selector with clickable buttons */}
+            <div className="mt-2 flex">
+              <div className="text-white text-xs mb-2">Quick year selection (click to view detailed data):</div>
+              <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
+                {years.map((year, index) => (
+                  <button
+                    key={year}
+                    onClick={() => {
+                      setYearIndex(index);
+                      // Open year modal if a country is selected
+                      if (selectedCountry) {
+                        openYearDataModal(selectedCountry.name, year);
+                      }
+                    }}
+                    className={`px-2 py-1 rounded text-xs font-medium transition-all ${yearIndex === index
+                      ? 'bg-teal-500 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                      }`}
+                    title={selectedCountry ? `View ${selectedCountry.name} data for ${year}` : `Set year to ${year}`}
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
             </div>
           </motion.div>
         )}
@@ -596,7 +968,8 @@ const TerraEarthGame = () => {
           </div>
           <p className="text-gray-300 text-sm mb-3">
             <strong>Drag to rotate</strong> the Earth.<br />
-            Click a marker to open the country’s storybook (right) and see 25 years of data (left).<br/>
+            Click a marker to open the country's storybook (right) and see 25 years of data (left).<br />
+            <strong>Click on chart points or year buttons</strong> to jump to specific years.<br />
             Tip: press <kbd className="px-1.5 py-0.5 bg-white/10 rounded">⌘K</kbd> / <kbd className="px-1.5 py-0.5 bg-white/10 rounded">Ctrl+K</kbd> to jump anywhere.
           </p>
           <div className="text-xs text-gray-400">Team CosmoMinds • Terra Data Visualization</div>
@@ -617,3 +990,6 @@ const TerraEarthGame = () => {
 };
 
 export default TerraEarthGame;
+
+
+

@@ -37,9 +37,9 @@ export const globeConfig = {
 
 export const starConfig = {
   color: 0xffffff,
-  size: 0.7,
+  size: 0.5,
   sizeAttenuation: true,
   transparent: true,
-  opacity: 0.8,
-  rotationSpeed: 0.0005,
+  opacity: 1.8,
+  rotationSpeed: 0.000005,
 };

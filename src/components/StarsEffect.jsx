@@ -46,7 +46,7 @@ export default function StarsEffect({ globeRef, starsData }) {
     let t0 = performance.now();
     const loop = () => {
       const now = performance.now();
-      const dt = (now - t0) / 1000;
+      const dt = (now - t0) / 11000;
       t0 = now;
 
       if (pointsRef.current) {
