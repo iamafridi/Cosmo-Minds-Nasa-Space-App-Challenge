@@ -256,7 +256,6 @@ All satellite imagery and data covers **2000–2024** (25 years).
 | 🧑‍💻 **Asif Zaman** | AI/ML Engineer |
 | 🧑‍💻 **Afridi Akbar Ifty** | Full-Stack Developer |
 | 📖 **Robiul Hasan** | Project Storyteller |
-| 🎬 **Mehrab-Al-Hasan** | Video Editor |
 | 🎨 **Abrar Hossain** | UI/UX Designer |
 | 🔬 **Kazi Tahera Jannat** | Researcher |
 
