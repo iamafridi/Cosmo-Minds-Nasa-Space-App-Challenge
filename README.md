@@ -1,167 +1,292 @@
-# 🌍 Cosmic Globe Visualization
+<div align="center">
 
-An immersive, interactive 3D globe experience built by **Team Cosmo Minds**, featuring cutting-edge web technologies to create a stunning cosmic visualization that connects the world.
-## DEMO
-<img width="1918" height="972" alt="image" src="https://github.com/user-attachments/assets/77afeb9a-fa18-4fc4-9475-af0901ab83f4" />
+<img src="https://img.shields.io/badge/NASA-Space%20Apps%20Challenge%202025-0B3D91?style=for-the-badge&logo=nasa&logoColor=white" />
+<img src="https://img.shields.io/badge/Team-CosmoMinds-14b8a6?style=for-the-badge" />
+<img src="https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
+<img src="https://img.shields.io/badge/Three.js-r180-black?style=for-the-badge&logo=three.js" />
+<img src="https://img.shields.io/badge/Vite-7-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
+
+<br/><br/>
+
+# 🚀 CosmoMinds — Terra Earth Explorer
+
+### *25 Years of NASA Terra Satellite Data, Explored Through Animated Storytelling*
+
+<br/>
+
+> **"What if children could fly through space, land on any country, and watch our planet change over 25 years — through the eyes of an animated astronaut kid?"**
+
+<br/>
+
+[🌍 Live Demo](#) &nbsp;·&nbsp; [📖 Features](#-features) &nbsp;·&nbsp; [🛠️ Setup](#-getting-started) &nbsp;·&nbsp; [👥 Team](#-team)
+
+</div>
+
+---
+
+## 📖 About the Project
+
+**CosmoMinds** is an interactive, story-driven web platform built for the **NASA Space Apps Challenge 2025**. It transforms 25 years of complex Earth observation data from NASA's **Terra satellite** into beautiful, animated, kid-friendly stories — making climate science accessible and exciting for the next generation.
+
+The platform combines a **real-time 3D globe**, **animated character storytelling**, **satellite sensor data visualisation**, a **canvas space game**, and an **AI-powered chatbot** — all wrapped in a cinematic space experience built with React, Three.js, and Framer Motion.
+
+---
 
 ## ✨ Features
 
-### 🌟 **Cosmic Experience**
+### 🌍 Interactive 3D Globe — Home Page
+- Photorealistic **Blue Marble Earth** rendered with Three.js + WebGL
+- **Custom GLSL shader atmosphere** — realistic limb glow around the planet
+- Orbiting **NASA Terra satellite** with animated solar panels and antenna
+- Live **animated data arcs** connecting countries across the globe
+- Click any **glowing country dot** to explore 25 years of satellite data
+- Smooth auto-rotation with drag, pinch-zoom, and physics damping
+- Animated **Kid** and **Astronaut** characters on screen with cycling story dialogue
 
-- **Infinite Starfield** - 1000+ animated stars creating a sense of boundless space
-- **Dynamic Globe Rotation** - Smooth, interactive Earth model with realistic textures
-- **Atmospheric Glow** - Authentic atmospheric rendering for immersive depth
+### 📖 Animated Story Explorer — `/story`
+- Fully animated **kid astronaut character** — walks, blinks, bounces, changes mood based on content
+- **Pure CSS keyframe animations** — buttery smooth at 60fps, zero JS frame counters
+- **Typewriter text effect** — story pages reveal one character at a time
+- **10 countries** with unique illustrated stories:
+  🇧🇩 Bangladesh · 🇰🇪 Kenya · 🇯🇵 Japan · 🇦🇷 Argentina · 🇺🇸 United States · 🇦🇺 Australia · 🇧🇷 Brazil · 🇨🇦 Canada · 🇨🇱 Chile · 🇬🇧 United Kingdom
+- Kid's **mood adapts** to story content — hopeful 🌱, sad 😟, or excited 🎉
+- **Quiz at the end of every story** — animated questions, instant correct/wrong feedback, medal scoring, confetti celebration on completion
 
-### 🌐 **Global Connectivity**
+### 🎮 Terra Space Rescue — `/space-game`
+- **Canvas-based space game** — fly your rocket through an asteroid field
+- Dodge asteroids, collect glowing **NASA data orbs** (ASTER · CERES · MISR · MODIS)
+- Each orb collected shows a **real NASA Terra scientific fact** as an animated toast
+- Lives system, progressive difficulty ramp, **high score** persisted in localStorage
+- Mobile **touch controls** — tap top half to go up, bottom half to go down
+- Kid's face visible inside the rocket window 👦
 
-- **Interactive Location Markers** - Major cities and landmarks across all continents
-- **Animated Arc Networks** - Beautiful connection lines linking global locations
-- **Real-time Interactivity** - Pan, zoom, and rotate with intuitive controls
+### 🛰️ Satellite Data Modal
+- Click any country on the globe → full-screen animated modal with kid character
+- **4 sensor tabs**: 🌡️ ASTER · ☀️ CERES · 🌈 MISR · 🌿 MODIS
+- **Year timeline slider** (2000–2024) with play button — watch satellite data animate over time
+- Real satellite imagery per year per sensor + parsed scientific data fields
+- Direct links to country story and space game from inside the modal
 
-### 📱 **Responsive Design**
+### 🤖 AI ChatBot — `/chatbot`
+- Ask anything about NASA Terra, climate, or Earth science
+- Streaming AI responses with full **Markdown rendering** (code blocks, tables, lists)
+- Suggested starter questions, animated typing indicator, clear chat button
 
-- **Multi-device Support** - Optimized for mobile, tablet, and desktop
-- **Adaptive Scaling** - Globe size adjusts intelligently to screen dimensions
-- **Touch-friendly Controls** - Seamless interaction across all devices
+### 👥 About — `/about`
+- Animated team member profiles
+- Animated stat counters (countries, years of data, sensors)
+- Full project description, tech stack display
+- Collapsible FAQ section
 
-### 🎨 **Modern UI/UX**
+---
 
-- **Glassmorphism Navigation** - Contemporary backdrop-blur navigation bar
-- **Smooth Animations** - Fluid transitions and micro-interactions
-- **Dark Cosmic Theme** - Carefully crafted color palette for space aesthetics
+## 🛰️ NASA Terra Instruments
 
-### AI Model Demo
+| Sensor | Full Name | What It Measures |
+|--------|-----------|-----------------|
+| 🌡️ **ASTER** | Advanced Spaceborne Thermal Emission and Reflection Radiometer | Surface temperature anomalies, land cover, deforestation rates |
+| ☀️ **CERES** | Clouds and Earth's Radiant Energy System | Earth's radiation budget — shortwave & longwave energy (W/m²) |
+| 🌈 **MISR** | Multi-angle Imaging SpectroRadiometer | Aerosols, air quality, NDVI vegetation index |
+| 🌿 **MODIS** | Moderate Resolution Imaging Spectroradiometer | Forests, wildfires, ocean temperature, ice extent |
 
-![AI Model Demo](https://i.ibb.co/v4b5WQrP/Whats-App-Image-2025-10-05-at-10-58-44-AM.jpg)
+---
 
+## 🗂️ Project Structure
 
+```
+CosmoMinds/
+├── public/
+│   └── datas/
+│       ├── aster.json              # ASTER surface temp data per country per year
+│       ├── ceres.json              # CERES radiation budget data
+│       ├── misr.json               # MISR NDVI + aerosol data
+│       ├── modis.json              # MODIS vegetation + fire data
+│       ├── all-countries-data.json
+│       └── book_cover_pic.json
+│
+├── src/
+│   ├── components/
+│   │   ├── GlobeComponent.jsx      # 3D globe — Three.js satellite, GLSL atmosphere shader
+│   │   ├── LocationModal.jsx       # Country modal — sensor tabs, year timeline, safe data renderer
+│   │   ├── TerraBook.jsx           # Flipbook component
+│   │   └── Alert.jsx
+│   │
+│   ├── constants/
+│   │   ├── locationsData.js        # Country coordinates, arc generator, star generator
+│   │   └── globeConfig.js
+│   │
+│   ├── data/
+│   │   ├── terraBookData_bgd.js    # Bangladesh — story pages + images
+│   │   ├── terraBookData_ken.js    # Kenya
+│   │   ├── terraBookData_jpn.js    # Japan
+│   │   ├── terraBookData_arg.js    # Argentina
+│   │   ├── terraBookData_usa.js    # United States
+│   │   ├── terraBookData_aus.js    # Australia
+│   │   ├── terraBookData_bra.js    # Brazil
+│   │   ├── terraBookData_can.js    # Canada
+│   │   ├── terraBookData_chl.js    # Chile
+│   │   └── terraBookData_uk.js     # United Kingdom
+│   │
+│   ├── routes/
+│   │   └── Router.jsx              # React Router DOM v6 — createBrowserRouter
+│   │
+│   ├── sections/
+│   │   ├── Hero.jsx                # Home — globe + animated characters + story panel
+│   │   ├── Navbar.jsx              # Animated navigation with active-pill indicator
+│   │   ├── AnimatedStory.jsx       # Story explorer + end-of-story quiz
+│   │   ├── SpaceGame.jsx           # Canvas space game
+│   │   ├── Chatbot.jsx             # Streaming AI chatbot
+│   │   ├── NotFound.jsx            # 404 page
+│   │   └── About/
+│   │       ├── AboutUs.jsx
+│   │       ├── About.jsx
+│   │       └── Contact.jsx
+│   │
+│   ├── App.jsx
+│   ├── main.jsx                    # RouterProvider entry point
+│   └── index.css                   # Global styles + all CSS keyframe animations
+│
+├── index.html
+├── vite.config.js
+├── tailwind.config.js
+├── eslint.config.js
+└── package.json
+```
 
-## 🛠️ Tech Stack
+---
 
-| Technology         | Purpose                 | Version |
-| ------------------ | ----------------------- | ------- |
-| **React**          | Frontend Framework      | 18+     |
-| **Vite**           | Build Tool & Dev Server | Latest  |
-| **Three.js**       | 3D Graphics Engine      | r128    |
-| **react-globe.gl** | Globe Visualization     | Latest  |
-| **Tailwind CSS**   | Utility-first Styling   | 3.0+    |
+## 🛣️ Routes
 
-## 🚀 Quick Start
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | **Home** | 3D globe with animated kid + astronaut storytelling characters |
+| `/story` | **Animated Stories** | Country storybook with animated kid + quiz at the end |
+| `/space-game` | **Space Game** | Asteroid dodge + NASA data orb collector |
+| `/chatbot` | **AI ChatBot** | Streaming AI assistant for Terra satellite questions |
+| `/about` | **About Us** | Team, project description, tech stack |
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js 16+ and npm/yarn
-- Modern browser with WebGL support
+- **Node.js** ≥ 18.0
+- **npm** ≥ 9.0
 
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/asif4762/TeamCosmoMinds.git
+# 1. Unzip the project
+unzip CosmoMinds-upgraded.zip
+cd CosmoMinds
 
-# Install dependencies
+# 2. Install all dependencies
 npm install
 
-# Start development server
+# 3. Start the development server
 npm run dev
-
-# Open http://localhost:5173 in your browser
 ```
 
-### Build for Production
+Open **[http://localhost:5173](http://localhost:5173)** in your browser.
+
+### Production Build
 
 ```bash
-# Create optimized production build
-npm run build
-
-# Preview production build locally
-npm run preview
+npm run build     # Builds to /dist
+npm run preview   # Preview production build locally
 ```
 
-## 📂 Project Architecture
+---
+
+## 🧰 Tech Stack
+
+| Category | Technology | Version |
+|----------|-----------|---------|
+| **Framework** | React | 18.3 |
+| **Routing** | React Router DOM | 6.x |
+| **3D / Globe** | Three.js + react-globe.gl | r180 / 2.36 |
+| **Animations** | Framer Motion | 12.x |
+| **Styling** | Tailwind CSS | 3.4 |
+| **Charts** | Chart.js + react-chartjs-2 | 4.5 |
+| **Build Tool** | Vite | 7.x |
+| **Email** | @emailjs/browser | 4.x |
+| **Confetti** | canvas-confetti | 1.9 |
+| **Audio** | Howler.js | 2.x |
+| **Icons** | Lucide React | 0.544 |
+
+---
+
+## ⚡ Performance Architecture
+
+The UI is engineered to be smooth even on mid-range devices:
+
+| Problem | Solution |
+|---------|----------|
+| Laggy character animations | **100% CSS keyframes** — `kidBob`, `legSwing`, `armSwing`, `flamePulse`, `blink` — zero JS |
+| Starfield causing re-renders | **Pure canvas RAF** — 200 stars, runs off the main thread |
+| Globe hover re-renders on every mouse move | `useRef` to track hover ID, `setState` only on actual change |
+| Resize cascades | **100ms debounce** on the resize handler |
+| Quiz reshuffling every render | `useMemo(() => buildQuiz(), [country])` — built once, never changes |
+| MISR/CERES JSON containing nested objects | `SafeValue` renderer — recursively handles any object/array field safely |
+| Satellite data crashing on missing fields | `Promise.allSettled` + null-safe optional chaining everywhere |
+| Character components re-rendering with parent | All wrapped in `React.memo()` |
+
+---
+
+## 📡 Data Sources
+
+| Source | Description |
+|--------|-------------|
+| **NASA Terra ASTER** | Land surface temperature anomalies (°C) + deforestation % per country per year |
+| **NASA Terra CERES** | Shortwave radiation stats (mean/min/max W/m²) per year |
+| **NASA Terra MISR** | NDVI values + vegetation assessment per year |
+| **NASA Terra MODIS** | Vegetation, fire activity, land cover changes |
+| **NASA Blue Marble** | Globe texture via [unpkg three-globe](https://unpkg.com/three-globe) |
+| **Topology DEM** | Bump map for 3D terrain relief |
+
+All satellite imagery and data covers **2000–2024** (25 years).
+
+---
+
+## 👥 Team
+
+| Name | Role |
+|------|------|
+| 🧑‍💻 **Asif Zaman** | AI/ML Engineer |
+| 🧑‍💻 **Afridi Akbar Ifty** | Full-Stack Developer |
+| 📖 **Robiul Hasan** | Project Storyteller |
+| 🎬 **Mehrab-Al-Hasan** | Video Editor |
+| 🎨 **Abrar Hossain** | UI/UX Designer |
+| 🔬 **Kazi Tahera Jannat** | Researcher |
+
+---
+
+## 🏆 NASA Space Apps Challenge 2025
+
+Built for the **NASA International Space Apps Challenge 2025** — the world's largest global hackathon.
+
+**Our challenge:** *"Celebrating 25 Years of NASA's Terra Satellite"*
+
+We chose to tell the story of Terra's data through the eyes of a child — because the planet's future belongs to them.
 
 ```
-src/
-├── components/
-│   ├── Alert.jsx
-│   ├── Button.jsx
-│   ├── GlobeComponent.jsx
-│   ├── LocationModal.jsx
-│   ├── StarsEffect.jsx
-├── sections/
-│   ├── Hero.jsx
-│   └── Navbar.jsx
-├── hooks/
-│   └── useAlert.js
-├── constants/
-│   └── globeConfig.js
-│   └── index.js
-│   └── locationData.js
-├── App.jsx
-├── main.jsx
-└── index.css
+"Every glowing dot on the globe is a story waiting to be told."
+                                              — Team CosmoMinds
 ```
 
-## 🎨 Customization Guide
-
-### 🌍 **Adding New Locations**
-
-```javascript
-// In Hero.jsx, extend the locations array
-const locations = [
-  { name: "Your City", lat: 40.7128, lng: -74.006 },
-  // Add more locations...
-];
-```
-
-### 🌈 **Customizing Arc Colors**
-
-```javascript
-// Modify arc colors in the arcsData generation
-arcsData.push({
-  // ... other properties
-  color: "#your-hex-color",
-});
-```
-
-### ⭐ **Adjusting Star Density**
-
-```javascript
-// Change the number of background stars
-const starCount = 1500; // Increase for more stars
-```
-
-### 🎯 **Globe Appearance**
-
-```javascript
-// Customize globe textures and atmosphere
-globeImageUrl="//your-custom-earth-texture.jpg"
-showAtmosphere={true}
-```
-
-## 🎮 Interactive Controls
-
-- **Mouse Drag** - Rotate the globe
-- **Mouse Wheel** - Zoom in/out
-- **Touch Gestures** - Mobile-friendly pan and zoom
-- **Location Clicks** - Interact with city markers
-
-## 🌟 Team Cosmo Minds
-
-We're a passionate team of developers creating immersive digital experiences that connect people with the cosmos and our beautiful planet Earth.
-
-### 🤝 **Contributing**
-
-We welcome contributions! Please feel free to submit issues and pull requests.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License**.
 
-**Made by Team Cosmo Minds** | _Connecting the world through cosmic visualization_
+---
+
+<div align="center">
+
+Made with ❤️ and 🚀 by **Team CosmoMinds** · NASA Space Apps 2025
+
+[![GitHub](https://img.shields.io/badge/GitHub-TeamCosmoMinds-181717?style=flat-square&logo=github)](https://github.com/asif4762/TeamCosmoMinds)
+
+</div>
