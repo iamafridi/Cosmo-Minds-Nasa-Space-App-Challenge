@@ -57,7 +57,7 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop pill nav */}
-            <nav className="hidden lg:block absolute left-1/2 -translate-x-1/2">
+            <nav className="hidden lg:block">
               <div className="flex items-center gap-0.5 bg-white/8 backdrop-blur-md border border-white/15 rounded-full px-2 py-1.5">
                 {NAV.map(item => {
                   const active = location.pathname === item.href;

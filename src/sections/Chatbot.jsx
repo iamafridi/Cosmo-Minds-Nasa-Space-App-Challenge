@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, Trash2, Bot, User, Rocket, Loader2 } from "lucide-react";
 import Navbar from "./Navbar";
 
-const API_BASE = "https://bot-five-liard.vercel.app";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 function MarkdownText({ text }) {
   return (

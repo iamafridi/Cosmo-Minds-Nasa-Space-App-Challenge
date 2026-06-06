@@ -1,172 +1,742 @@
-import { useRef, useCallback, useMemo, useEffect, useState } from 'react';
+import React, { useRef, useCallback, useMemo, useEffect, useState } from 'react';
 import Globe from 'react-globe.gl';
 import * as THREE from 'three';
 import { colors, generateArcsData, locations } from '../constants/locationsData';
+import StarsEffect from './StarsEffect';
+import { globeConfig } from '../constants/globeConfig';
 
-export default function GlobeComponent({ dimensions, starsData = [], onLocationClick, orbitalPeriodMs = 14000, orbitInclinationDeg = 35, orbitAltitudeRatio = 2.4 }) {
+
+const GlobeComponent = ({
+  dimensions,
+  starsData,
+  onLocationClick,
+
+  // can override these when you use <GlobeComponent ... />
+  satellitePath = '/nasa-eos-am-1terra-satellite/source/nasa_eos_am-1terra_satellite.glb',
+  albedoPath = '/nasa-eos-am-1terra-satellite/textures/gltf_embedded_2.png',
+  emissivePath = '/nasa-eos-am-1terra-satellite/textures/gltf_embedded_0.png',
+
+  // Orbit tuning
+  orbitAltitudeRatio = 1.50,        // >1 = above surface
+  orbitInclinationDeg = 35,         // tilt of orbit plane
+  orbitRAANDeg = -20,               // rotation around Y (ascending node)
+  orbitalPeriodMs = 30000,          // ~30s per revolution
+  orbitThicknessRatio = 0.01,       //  thickness of torus ring (relative to globe radius)
+  satelliteScaleRatio = 0.06       // satellite size vs globe radius
+}) => {
   const globeRef = useRef(null);
-  const arcsRef = useRef(generateArcsData());
-  const [arcsData, setArcsData] = useState(() => generateArcsData());
-  const [ready, setReady] = useState(false);
-  const satRef = useRef(null);
-  const satAngle = useRef(0);
+
+  // UI state
+  // const [hovered, setHovered] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [autoRotate, setAutoRotate] = useState(true);
+  const idleTimer = useRef(null);
+  const [hovered, setHovered] = useState(null);
+  const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
+
+
+  // Scene adornments
+  const haloRef = useRef(null);
+  const burstsRef = useRef([]);
   const rafRef = useRef(null);
-  const hoveredRef = useRef(null);
-  const [hoveredId, setHoveredId] = useState(null);
 
-  const isMobile = dimensions.width < 768;
-  const size = isMobile ? Math.min(dimensions.width * 0.9, 360) : Math.min(dimensions.width * 0.5, 520);
+  // Satellite orbit refs + UI
+  const satOrbitRef = useRef({ group: null, pivot: null, mesh: null, ring: null, torus: null });
+  const satAnimRef = useRef(null);
+  const satAngleRef = useRef(0);
+  const satLastTsRef = useRef(0);
+  const [satInfoOpen, setSatInfoOpen] = useState(false);
 
-  // Arc refresh — low frequency, no cascade
-  useEffect(() => {
-    const id = setInterval(() => setArcsData(generateArcsData()), 5000);
-    return () => clearInterval(id);
+  // Data
+  const arcsData = useMemo(() => generateArcsData(), []);
+  const points = useMemo(() => locations, []);
+  const labelColorFn = useCallback(() => globeConfig.labelColor, []);
+
+  // Helpers
+  const latLngToVector3 = useCallback((lat, lng, altRatio = 1.0) => {
+    const radius = globeRef.current?.getGlobeRadius?.() || 100;
+    const phi = (90 - lat) * (Math.PI / 180);
+    const theta = (lng + 180) * (Math.PI / 180);
+
+    const r = radius * altRatio;
+    const x = -r * Math.sin(phi) * Math.cos(theta);
+    const z = r * Math.sin(phi) * Math.sin(theta);
+    const y = r * Math.cos(phi);
+    return new THREE.Vector3(x, y, z);
   }, []);
 
-  const handleReady = useCallback(() => {
-    setReady(true);
+  const markUserActive = useCallback(() => {
+    if (!globeRef.current) return;
+    globeRef.current.controls().autoRotate = false;
+    setAutoRotate(false);
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(() => {
+      globeRef.current.controls().autoRotate = true;
+      setAutoRotate(true);
+    }, 1000);
+  }, []);
+
+  // Visual FX
+  const updateSelectionHalo = useCallback((sel) => {
+    const globe = globeRef.current;
+    if (!globe) return;
+
+    if (!haloRef.current) {
+      const group = new THREE.Group();
+      group.name = 'selection-halo';
+
+      const torus = new THREE.Mesh(
+        new THREE.TorusGeometry(2.2, 0.14, 16, 100),
+        new THREE.MeshBasicMaterial({ color: 0xffd54a, transparent: true, opacity: 0.65 })
+      );
+      group.add(torus);
+
+      const innerRing = new THREE.Mesh(
+        new THREE.TorusGeometry(1.4, 0.06, 16, 100),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 })
+      );
+      group.add(innerRing);
+
+      globe.scene().add(group);
+      haloRef.current = group;
+    }
+
+    if (sel) {
+      const pos = latLngToVector3(sel.lat, sel.lng, 1.01);
+      haloRef.current.position.copy(pos);
+      const normal = pos.clone().normalize();
+      const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
+      haloRef.current.setRotationFromQuaternion(q);
+      haloRef.current.visible = true;
+    } else {
+      haloRef.current.visible = false;
+    }
+  }, [latLngToVector3]);
+
+  const spawnBurst = useCallback((lat, lng) => {
+    const globe = globeRef.current;
+    if (!globe) return;
+    const scene = globe.scene();
+    const pos = latLngToVector3(lat, lng, 1.03);
+
+    const particleCount = 80;
+    const positions = new Float32Array(particleCount * 3);
+    const velocities = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount; i++) {
+      const dir = new THREE.Vector3(
+        (Math.random() - 0.5),
+        (Math.random() - 0.5),
+        (Math.random() - 0.5)
+      ).normalize().multiplyScalar(0.25 + Math.random() * 0.35);
+
+      positions[i * 3] = pos.x;
+      positions[i * 3 + 1] = pos.y;
+      positions[i * 3 + 2] = pos.z;
+
+      velocities[i * 3] = dir.x;
+      velocities[i * 3 + 1] = dir.y;
+      velocities[i * 3 + 2] = dir.z;
+    }
+
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geom.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+
+    const mat = new THREE.PointsMaterial({
+      color: 0xfff3a3,
+      size: 0.9,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.95,
+      depthWrite: false
+    });
+
+    const points = new THREE.Points(geom, mat);
+    points.name = 'burst';
+    scene.add(points);
+
+    const burst = { mesh: points, start: performance.now(), life: 900 };
+    burstsRef.current.push(burst);
+
+    if (!rafRef.current) {
+      const step = () => {
+        const now = performance.now();
+        let anyAlive = false;
+
+        burstsRef.current.forEach(b => {
+          const elapsed = now - b.start;
+          const t = Math.min(1, elapsed / b.life);
+          const p = b.mesh.geometry.attributes.position;
+          const v = b.mesh.geometry.attributes.velocity;
+          for (let i = 0; i < p.count; i++) {
+            p.array[i * 3] += v.array[i * 3] * 0.9;
+            p.array[i * 3 + 1] += v.array[i * 3 + 1] * 0.9;
+            p.array[i * 3 + 2] += v.array[i * 3 + 2] * 0.9;
+          }
+          p.needsUpdate = true;
+          b.mesh.material.opacity = 0.95 * (1 - t);
+          if (elapsed < b.life) anyAlive = true;
+        });
+
+        burstsRef.current = burstsRef.current.filter(b => {
+          if (now - b.start >= b.life) {
+            b.mesh.geometry.dispose();
+            b.mesh.material.dispose();
+            globeRef.current?.scene().remove(b.mesh);
+            return false;
+          }
+          return true;
+        });
+
+        if (anyAlive) rafRef.current = requestAnimationFrame(step);
+        else { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+      };
+      rafRef.current = requestAnimationFrame(step);
+    }
+  }, [latLngToVector3]);
+
+  // Handlers
+  const flyTo = useCallback((lat, lng, altitude = 2) => {
+    const globe = globeRef.current;
+    if (!globe) return;
+    globe.pointOfView({ lat, lng, altitude }, 1000);
+  }, []);
+
+  const handlePointClick = useCallback((point, event) => {
+    if (!point) return;
+    markUserActive();
+    flyTo(point.lat, point.lng, 2);
+    spawnBurst(point.lat, point.lng);
+    const sel = { name: point.name, lat: point.lat, lng: point.lng, emoji: point.emoji };
+    setSelected(sel);
+    updateSelectionHalo(sel);
+    onLocationClick?.(point, event);
+  }, [flyTo, onLocationClick, spawnBurst, updateSelectionHalo, markUserActive]);
+
+  const handleLabelClick = useCallback((label, event) => {
+    if (!label) return;
+    markUserActive();
+    flyTo(label.lat, label.lng, 2);
+    spawnBurst(label.lat, label.lng);
+    const sel = { name: label.name, lat: label.lat, lng: label.lng, emoji: label.emoji };
+    setSelected(sel);
+    updateSelectionHalo(sel);
+    onLocationClick?.(label, event);
+  }, [flyTo, onLocationClick, spawnBurst, updateSelectionHalo, markUserActive]);
+
+  const handlePointHover = useCallback((point) => {
+    const globe = globeRef.current;
+    if (!globe) return;
+
+    globe.controls().domElement.style.cursor = point ? 'pointer' : 'grab';
+
+    if (point) {
+      // Save hover data
+      setHovered({ name: point.name, lat: point.lat, lng: point.lng, emoji: point.emoji });
+
+      // Convert lat/lng to 3D vector
+      const pos = latLngToVector3(point.lat, point.lng, 1.02);
+
+      // Project to 2D screen coords
+      const camera = globe.camera();
+      const renderer = globe.renderer();
+      const vec = pos.clone().project(camera);
+
+      const x = (vec.x * 0.5 + 0.5) * renderer.domElement.clientWidth;
+      const y = (-vec.y * 0.5 + 0.5) * renderer.domElement.clientHeight;
+
+      setHoverPos({ x, y });
+    } else {
+      setHovered(null);
+    }
+  }, [latLngToVector3]);
+
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!points?.length) return;
+
+      if (['ArrowLeft', 'ArrowRight', ' ', 'Enter', 'Escape'].includes(e.key)) {
+        e.preventDefault();
+        markUserActive();
+      }
+      const idx = selected ? points.findIndex(p => p.name === selected.name) : -1;
+
+      if (e.key === 'ArrowRight') {
+        const next = points[(idx + 1 + points.length) % points.length];
+        handlePointClick(next);
+      } else if (e.key === 'ArrowLeft') {
+        const prev = points[(idx - 1 + points.length) % points.length];
+        handlePointClick(prev);
+      } else if (e.key === 'Enter' && selected) {
+        flyTo(selected.lat, selected.lng, 1.8);
+      } else if (e.key === ' ') {
+        const g = globeRef.current;
+        if (g) {
+          const newAR = !autoRotate;
+          g.controls().autoRotate = newAR;
+          setAutoRotate(newAR);
+        }
+      } else if (e.key === 'Escape') {
+        setSelected(null);
+        updateSelectionHalo(null);
+        setSatInfoOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [points, selected, handlePointClick, flyTo, autoRotate, updateSelectionHalo, markUserActive]);
+
+  // Pause auto-rotate on interactions
+  useEffect(() => {
     const g = globeRef.current;
     if (!g) return;
-
-    const ctrl = g.controls();
-    ctrl.autoRotate = true;
-    ctrl.autoRotateSpeed = 0.28;
-    ctrl.enableDamping = true;
-    ctrl.dampingFactor = 0.06;
-    ctrl.minDistance = 140;
-    ctrl.maxDistance = 550;
-    ctrl.enableZoom = true;
-
-    const cam = g.camera();
-    cam.position.set(0, 0, 270);
-    cam.fov = 48;
-    cam.updateProjectionMatrix();
-
-    const scene = g.scene();
-
-    // Rich atmosphere shell
-    const atmoGeo = new THREE.SphereGeometry(102, 64, 64);
-    const atmoMat = new THREE.ShaderMaterial({
-      uniforms: {},
-      vertexShader: `
-        varying vec3 vNormal;
-        void main() {
-          vNormal = normalize(normalMatrix * normal);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        varying vec3 vNormal;
-        void main() {
-          float intensity = pow(0.65 - dot(vNormal, vec3(0,0,1.0)), 3.0);
-          gl_FragColor = vec4(0.2, 0.55, 1.0, 1.0) * intensity * 0.7;
-        }
-      `,
-      blending: THREE.AdditiveBlending,
-      side: THREE.FrontSide,
-      transparent: true,
-    });
-    scene.add(new THREE.Mesh(atmoGeo, atmoMat));
-
-    // Satellite
-    const sat = new THREE.Group();
-    const bodyMat = new THREE.MeshStandardMaterial({ color: 0xccddee, metalness: 0.8, roughness: 0.2 });
-    sat.add(new THREE.Mesh(new THREE.BoxGeometry(5, 3, 2), bodyMat));
-    const panelMat = new THREE.MeshStandardMaterial({ color: 0x1a4fa8, metalness: 0.4, roughness: 0.5, emissive: 0x0a2050, emissiveIntensity: 0.5 });
-    const lp = new THREE.Mesh(new THREE.BoxGeometry(10, 3.5, 0.25), panelMat);
-    lp.position.set(-10, 0, 0);
-    const rp = lp.clone(); rp.position.set(10, 0, 0);
-    const antMat = new THREE.MeshStandardMaterial({ color: 0xddeeff, metalness: 0.95 });
-    const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 4, 6), antMat);
-    ant.position.set(0, 3, 0);
-    const glowMat = new THREE.MeshBasicMaterial({ color: 0x44aaff, transparent: true, opacity: 0.15 });
-    sat.add(lp, rp, ant, new THREE.Mesh(new THREE.SphereGeometry(3.5, 12, 12), glowMat));
-    satRef.current = sat;
-    scene.add(sat);
-
-    // Orbit ring
-    const R = 100 * orbitAltitudeRatio;
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(R, 0.18, 6, 200),
-      new THREE.MeshBasicMaterial({ color: 0x4488ff, transparent: true, opacity: 0.14 })
-    );
-    ring.rotation.x = THREE.MathUtils.degToRad(orbitInclinationDeg);
-    scene.add(ring);
-
-    // Lights
-    scene.add(new THREE.AmbientLight(0x223355, 1.2));
-    const sun = new THREE.DirectionalLight(0xfff5dd, 2.0);
-    sun.position.set(500, 200, 300);
-    scene.add(sun);
-    const fill = new THREE.DirectionalLight(0x335577, 0.4);
-    fill.position.set(-300, -100, -200);
-    scene.add(fill);
-  }, [orbitAltitudeRatio, orbitInclinationDeg]);
-
-  // Satellite animation
-  useEffect(() => {
-    if (!ready || !satRef.current) return;
-    const R = 100 * orbitAltitudeRatio;
-    const inc = THREE.MathUtils.degToRad(orbitInclinationDeg);
-    const tick = () => {
-      satAngle.current += (Math.PI * 2) / (orbitalPeriodMs / 16.67);
-      const a = satAngle.current;
-      satRef.current.position.set(R * Math.cos(a), R * Math.sin(a) * Math.sin(inc), R * Math.sin(a) * Math.cos(inc));
-      satRef.current.lookAt(0, 0, 0);
-      satRef.current.rotateY(Math.PI / 2);
-      rafRef.current = requestAnimationFrame(tick);
+    const dom = g.controls().domElement;
+    const handler = () => markUserActive();
+    dom.addEventListener('pointerdown', handler, { passive: true });
+    dom.addEventListener('wheel', handler, { passive: true });
+    dom.addEventListener('pointermove', handler, { passive: true });
+    return () => {
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+      dom.removeEventListener('pointerdown', handler);
+      dom.removeEventListener('wheel', handler);
+      dom.removeEventListener('pointermove', handler);
     };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [ready, orbitalPeriodMs, orbitAltitudeRatio, orbitInclinationDeg]);
+  }, [markUserActive]);
 
-  const pts = useMemo(() => locations.map(l => ({
-    ...l,
-    size: hoveredId === l.id ? 1.8 : 1.1,
-    color: hoveredId === l.id ? '#ffffff' : colors[l.id % colors.length],
-  })), [hoveredId]);
-
-  const handleHover = useCallback((p) => {
-    const newId = p ? p.id : null;
-    if (hoveredRef.current !== newId) {
-      hoveredRef.current = newId;
-      setHoveredId(newId);
-    }
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      burstsRef.current.forEach(b => {
+        b.mesh.geometry?.dispose?.();
+        b.mesh.material?.dispose?.();
+        globeRef.current?.scene()?.remove(b.mesh);
+      });
+      burstsRef.current = [];
+      if (haloRef.current) {
+        haloRef.current.children?.forEach(child => {
+          child.geometry?.dispose?.();
+          child.material?.dispose?.();
+        });
+        globeRef.current?.scene()?.remove(haloRef.current);
+        haloRef.current = null;
+      }
+    };
   }, []);
 
+  // --- Satellite orbit setup: GLB + textures + thick torus orbit ---
+  useEffect(() => {
+    let disposed = false;
+    let orbitGroup = null;
+    let pivot = null;
+
+    const init = async () => {
+      const globe = globeRef.current;
+      if (!globe) return;
+
+      const scene = globe.scene();
+      const radius = globe.getGlobeRadius?.() || 100;
+
+      // Orbit parameters
+      const orbitRadius = radius * orbitAltitudeRatio;
+      const inclination = THREE.MathUtils.degToRad(orbitInclinationDeg);
+      const ascNode = THREE.MathUtils.degToRad(orbitRAANDeg);
+
+      // Group defining the orbit plane
+      orbitGroup = new THREE.Group();
+      orbitGroup.name = 'satellite-orbit-group';
+      orbitGroup.rotation.set(inclination, ascNode, 0);
+      scene.add(orbitGroup);
+
+      // Thin guide line (kept for visual sharpness)
+      const steps = 256;
+      const pts = [];
+      for (let i = 0; i < steps; i++) {
+        const a = (i / steps) * Math.PI * 2;
+        pts.push(new THREE.Vector3(Math.cos(a) * orbitRadius, 0, Math.sin(a) * orbitRadius));
+      }
+      const ring = new THREE.LineLoop(
+        new THREE.BufferGeometry().setFromPoints(pts),
+        new THREE.LineBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.55 })
+      );
+      orbitGroup.add(ring);
+
+      // ✅ Thick orbit ring (torus) — THIS is the "thickness"
+      const orbitThickness = radius * orbitThicknessRatio; // tweak this value
+      const torus = new THREE.Mesh(
+        new THREE.TorusGeometry(orbitRadius, orbitThickness, 24, 200),
+        new THREE.MeshPhysicalMaterial({
+          color: 0x7dd3fc,
+          roughness: 0.35,
+          metalness: 0.2,
+          transparent: true,
+          opacity: 0.22,
+          emissive: new THREE.Color(0x7dd3fc),
+          emissiveIntensity: 0.55
+        })
+      );
+      // Torus lies in XY plane by default — spin to XZ to match our line
+      torus.rotation.x = Math.PI / 2;
+      orbitGroup.add(torus);
+
+      // Pivot that rotates the satellite around Earth
+      pivot = new THREE.Object3D();
+      orbitGroup.add(pivot);
+
+      // Lazy import GLTFLoader (SSR-safe)
+      const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
+      const loader = new GLTFLoader();
+
+      loader.load(
+        satellitePath,
+        async (gltf) => {
+          if (disposed) return;
+          const sat = gltf.scene;
+
+          // Size satellite relative to globe
+          const scale = radius * satelliteScaleRatio;
+          sat.scale.setScalar(scale);
+
+          // Start position on orbit
+          sat.position.set(orbitRadius, 0, 0);
+          sat.lookAt(0, 0, 0);
+
+          // Load & apply textures to ensure color (no gray model)
+          const tLoader = new THREE.TextureLoader();
+          const loadTex = (url, isColor = false) =>
+            new Promise((resolve) => {
+              tLoader.load(
+                url,
+                (tex) => {
+                  if (isColor) tex.colorSpace = THREE.SRGBColorSpace;
+                  tex.flipY = false;
+                  tex.anisotropy = 4;
+                  resolve(tex);
+                },
+                undefined,
+                () => resolve(null)
+              );
+            });
+
+          const [colorMap, emissiveMap] = await Promise.all([
+            loadTex(albedoPath, true),
+            loadTex(emissivePath, true)
+          ]);
+
+          sat.traverse((o) => {
+            if (!o.isMesh) return;
+            if (o.material) {
+              if (Array.isArray(o.material)) o.material.forEach(m => m.dispose?.());
+              else o.material.dispose?.();
+            }
+            o.material = new THREE.MeshStandardMaterial({
+              map: colorMap || null,
+              metalness: 0.55,
+              roughness: 0.5,
+              emissiveMap: emissiveMap || null,
+              emissive: emissiveMap ? new THREE.Color(0xffffff) : new THREE.Color(0x000000),
+              emissiveIntensity: emissiveMap ? 0.8 : 0.0
+            });
+            o.castShadow = false;
+            o.receiveShadow = false;
+          });
+
+          pivot.add(sat);
+          satOrbitRef.current = { group: orbitGroup, pivot, mesh: sat, ring, torus };
+        },
+        undefined,
+        (err) => console.error('Satellite load error:', err)
+      );
+
+
+
+      // Animate: revolution
+      const angularSpeed = (2 * Math.PI) / orbitalPeriodMs; // rad per ms
+      const step = (now) => {
+        if (satLastTsRef.current === 0) satLastTsRef.current = now;
+        const dt = now - satLastTsRef.current;
+        satLastTsRef.current = now;
+
+        satAngleRef.current += dt * angularSpeed;
+        if (pivot) pivot.rotation.y = satAngleRef.current;
+
+        if (satOrbitRef.current.mesh) {
+          // Keep satellite facing Earth (nice visual)
+          satOrbitRef.current.mesh.lookAt(0, 0, 0);
+        }
+
+        if (!disposed) satAnimRef.current = requestAnimationFrame(step);
+      };
+      satAnimRef.current = requestAnimationFrame(step);
+    };
+
+    init();
+
+    return () => {
+      disposed = true;
+      if (satAnimRef.current) cancelAnimationFrame(satAnimRef.current);
+      satAnimRef.current = null;
+
+      const globe = globeRef.current;
+      if (globe && satOrbitRef.current.group) {
+        const grp = satOrbitRef.current.group;
+        grp.traverse(obj => {
+          obj.geometry?.dispose?.();
+          if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose?.());
+          else obj.material?.dispose?.();
+        });
+        globe.scene().remove(grp);
+      }
+      satOrbitRef.current = { group: null, pivot: null, mesh: null, ring: null, torus: null };
+    };
+  }, [satellitePath, albedoPath, emissivePath, orbitAltitudeRatio, orbitInclinationDeg, orbitRAANDeg, orbitalPeriodMs, orbitThicknessRatio, satelliteScaleRatio]);
+
+
+  // Set initial POV (zoomed out)
+  // Add this in your useEffect where you set up the globe
+  useEffect(() => {
+    if (!globeRef.current) return;
+    const controls = globeRef.current.controls();
+
+    // Set auto-rotation speed (default is 2.0)
+    controls.autoRotateSpeed = 0.4; // Slower rotation
+    // controls.autoRotateSpeed = 5.0; // Faster rotation
+
+    globeRef.current.pointOfView(
+      { lat: 20, lng: 0, altitude: 4.5 },
+      1
+    );
+  }, []);
+  // useEffect(() => {
+  //   if (!globeRef.current) return;
+  //   globeRef.current.pointOfView(
+  //     { lat: 20, lng: 0, altitude: 4.5 }, // ↑ increase altitude for less zoom
+  //     1 // no animation
+  //   );
+  // }, []);
+  // Click satellite to open info (raycast)
+  useEffect(() => {
+    const g = globeRef.current;
+    if (!g) return;
+    const dom = g.renderer().domElement;
+    const camera = g.camera();
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    const pick = (e) => {
+      const sat = satOrbitRef.current?.mesh;
+      if (!sat) return;
+
+      const rect = dom.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const hits = raycaster.intersectObject(sat, true);
+      if (hits.length) {
+        e.preventDefault();
+        markUserActive();
+        setSatInfoOpen(true);
+      }
+    };
+
+    const hover = (e) => {
+      const sat = satOrbitRef.current?.mesh;
+      if (!sat) return;
+      const rect = dom.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const hits = raycaster.intersectObject(sat, true);
+      dom.style.cursor = hits.length ? 'pointer' : (hovered ? 'pointer' : 'grab');
+    };
+
+    dom.addEventListener('pointerdown', pick);
+    dom.addEventListener('pointermove', hover, { passive: true });
+    return () => {
+      dom.removeEventListener('pointerdown', pick);
+      dom.removeEventListener('pointermove', hover);
+    };
+  }, [markUserActive, hovered]);
+
+  // Label helpers
+  const labelSize = useCallback((d) => {
+    if (selected?.name === d.name) return globeConfig.labelSize * 1.35;
+    if (hovered?.name === d.name) return globeConfig.labelSize * 1.2;
+    return globeConfig.labelSize;
+  }, [hovered, selected]);
+
+  const labelText = useCallback((d) => `${d.emoji ? d.emoji + ' ' : ''}${d.name}`, []);
+  const labelColor = useCallback((d) => {
+    if (selected?.name === d.name) return '#ffd54a';
+    if (hovered?.name === d.name) return '#ffffff';
+    return labelColorFn(d);
+  }, [hovered, selected, labelColorFn]);
+
   return (
-    <div className="relative flex items-center justify-center" style={{ width: size + 60, height: size + 60 }}>
-      {/* Layered glow */}
-      <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'radial-gradient(circle, rgba(68,140,255,0.18) 30%, rgba(20,60,180,0.08) 60%, transparent 80%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', inset: -20, borderRadius: '50%', boxShadow: '0 0 80px 30px rgba(50,120,255,0.12), 0 0 160px 60px rgba(20,60,180,0.07)', pointerEvents: 'none' }} />
-      <div className="animate-globeGlow" style={{ position: 'relative', zIndex: 2 }}>
-        <Globe
-          ref={globeRef}
-          width={size} height={size}
-          backgroundColor="rgba(0,0,0,0)"
-          globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
-          bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
-          showAtmosphere={true}
-          atmosphereColor="#3a8fff"
-          atmosphereAltitude={0.22}
-          arcsData={arcsData}
-          arcColor="color"
-          arcDashLength={() => 0.35}
-          arcDashGap={() => 0.2}
-          arcDashAnimateTime={() => 1800}
-          arcStroke={() => 0.5}
-          arcAltitude={() => 0.15}
-          pointsData={pts}
-          pointAltitude={0.008}
-          pointRadius="size"
-          pointColor="color"
-          pointLabel={d => `<div style="background:rgba(3,12,40,.96);border:1px solid rgba(100,180,255,.45);border-radius:12px;padding:8px 14px;font-family:Nunito,sans-serif;font-size:13px;color:#e8f4ff;font-weight:700;white-space:nowrap;box-shadow:0 4px 24px rgba(0,40,120,.5)">${d.name}<br><span style="font-size:10px;color:rgba(140,190,255,.65);font-weight:500">${d.region || ''}</span></div>`}
-          onPointClick={onLocationClick}
-          onPointHover={handleHover}
-          onGlobeReady={handleReady}
-          rendererConfig={{ antialias: true, alpha: true, powerPreference: 'high-performance', precision: 'mediump' }}
-        />
-      </div>
+    <>
+      <Globe
+        ref={globeRef}
+        width={dimensions.width}
+        height={dimensions.height}
+
+        // Globe base
+        globeImageUrl={globeConfig.globeImageUrl}
+        backgroundColor={globeConfig.backgroundColor}
+        enablePointerInteraction={globeConfig.enablePointerInteraction}
+
+        // Arcs
+        arcsData={arcsData}
+        arcStartLat={d => d.startLat}
+        arcStartLng={d => d.startLng}
+        arcEndLat={d => d.endLat}
+        arcEndLng={d => d.endLng}
+        arcColor={d => d.color}
+        arcStroke={globeConfig.arcStroke}
+        arcDashLength={globeConfig.arcDashLength}
+        arcDashGap={globeConfig.arcDashGap}
+        arcDashAnimateTime={globeConfig.arcDashAnimateTime}
+        arcDashInitialGap={() => Math.random()}
+
+        // Points
+        pointsData={points}
+        pointLat={d => d.lat}
+        pointLng={d => d.lng}
+        pointColor={() => colors[Math.floor(Math.random() * colors.length)]}
+        pointRadius={globeConfig.pointRadius}
+        pointAltitude={globeConfig.pointAltitude}
+        onPointClick={handlePointClick}
+        onPointHover={handlePointHover}
+
+        // Rings
+        ringsData={points}
+        ringLat={d => d.lat}
+        ringLng={d => d.lng}
+        ringMaxRadius={globeConfig.ringMaxRadius}
+        ringPropagationSpeed={globeConfig.ringPropagationSpeed}
+        ringRepeatPeriod={globeConfig.ringRepeatPeriod}
+        ringColor={() => colors[Math.floor(Math.random() * colors.length)]}
+
+        // Labels
+        labelsData={points}
+        labelLat={d => d.lat}
+        labelLng={d => d.lng}
+        labelText={labelText}
+        labelSize={labelSize}
+        labelColor={labelColor}
+        labelAltitude={globeConfig.labelAltitude}
+        labelDotRadius={0.34}
+        labelResolution={2}
+        onLabelClick={handleLabelClick}
+        onLabelHover={handlePointHover}
+
+        // Atmosphere
+        showAtmosphere={globeConfig.showAtmosphere}
+        atmosphereColor={globeConfig.atmosphereColor}
+        atmosphereAltitude={globeConfig.atmosphereAltitude}
+
+        // Camera caps
+        cameraMinDistance={globeConfig.cameraMinDistance}
+        cameraMaxDistance={globeConfig.cameraMaxDistance}
+      />
+
+      {/* Stars */}
+      <StarsEffect globeRef={globeRef} starsData={starsData} />
+
+      {/* Hover tip */}
+      {hovered && !selected && (
+        <div
+          className="nasa-hover"
+          style={{
+            position: 'absolute',
+            left: `${hoverPos.x + 12}px`,
+            top: `${hoverPos.y + 12}px`,
+            transform: 'translate(-50%, -100%)',
+            pointerEvents: 'none'
+          }}
+        >
+          <div className="nasa-hover-title">
+            {hovered.emoji ? `${hovered.emoji} ` : ''}{hovered.name}
+          </div>
+          <div>lat: {hovered.lat.toFixed(2)} · lng: {hovered.lng.toFixed(2)}</div>
+          <div className="nasa-hover-sub">Click to explore</div>
+        </div>
+      )}
+
+
+      {/* Selected toast */}
+      {selected && (
+        <div className="nasa-toast">
+          <div className="nasa-toast-title">
+            {selected.emoji ? `${selected.emoji} ` : ''}{selected.name}
+          </div>
+          <div>Enter = focus · Esc = clear · Space = auto-rotate</div>
+        </div>
+      )}
+
+      {/* NASA-themed modal on satellite click */}
+      {satInfoOpen && (
+        <div className="nasa-backdrop" onClick={() => setSatInfoOpen(false)}>
+          <div
+            className="nasa-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Terra Instrument Suite"
+          >
+            <div className="nasa-border-glow" />
+            <div className="nasa-bg">
+              <div className="nasa-stars nasa-stars-1" />
+              <div className="nasa-stars nasa-stars-2" />
+              <div className="nasa-scanline" />
+            </div>
+
+            <div className="nasa-header">
+              <div className="nasa-badge">
+                <div className="nasa-badge-ring" />
+                <div className="nasa-badge-core">NASA</div>
+              </div>
+              <div className="nasa-title">
+                <div className="nasa-title-main">Terra (EOS AM-1)</div>
+                <div className="nasa-title-sub">Instrument Suite — Quick Overview</div>
+              </div>
+              <button onClick={() => setSatInfoOpen(false)} className="nasa-close" aria-label="Close">×</button>
+            </div>
+
+            <div className="nasa-content">
+              <Item k="MODIS" v="Monitors land, oceans, and atmosphere for vegetation, temperature, and clouds." delay={0} />
+              <Item k="ASTER" v="Captures high-resolution images of Earth's surface for geology and land cover." delay={60} />
+              <Item k="CERES" v="Measures Earth's energy balance to study climate and clouds." delay={120} />
+              <Item k="MISR" v="Analyzes aerosols, clouds, and surface features from multiple angles." delay={180} />
+              <Item k="MOPITT" v="Tracks atmospheric carbon monoxide to monitor air pollution." delay={240} />
+            </div>
+
+            <div className="nasa-footer">
+              <div className="nasa-dot" />
+              <div className="nasa-tip">Tip: Click outside this window or press <b>Esc</b> to close.</div>
+              <div className="nasa-chip">Sun-sync orbit</div>
+              <div className="nasa-chip">Polar crossing</div>
+              <div className="nasa-chip">Climate science</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </>
+  );
+};
+
+// Animated item line used inside modal
+function Item({ k, v, delay = 0 }) {
+  return (
+    <div className="nasa-item" style={{ animationDelay: `${delay}ms` }}>
+      <div className="nasa-item-key">{k}</div>
+      <div className="nasa-item-val">{v}</div>
     </div>
   );
 }
+
+export default GlobeComponent;
